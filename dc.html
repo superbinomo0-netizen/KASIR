@@ -1,0 +1,3192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DokumenKu — Layanan Dokumen Berkah</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome untuk Ikon -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Inter untuk UI & Plus Jakarta Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- html2canvas untuk Export PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --theme-from: #0f766e;
+      --theme-to: #0369a1;
+      --theme-accent: #0d9488;
+      --theme-soft: #f0fdfa;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #1e293b;
+      overflow-x: hidden;
+    }
+
+    .theme-gradient {
+      background: linear-gradient(135deg, var(--theme-from), var(--theme-to));
+    }
+
+    .theme-text {
+      color: var(--theme-accent);
+    }
+
+    .theme-border {
+      border-color: var(--theme-accent);
+    }
+
+    /* Kertas A4 Preview */
+    .a4-paper {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+      padding: 20mm 22mm;
+      margin: 0 auto;
+      position: relative;
+      color: #000000;
+      box-sizing: border-box;
+      transition: transform 0.2s ease;
+    }
+
+    /* Tipografi Surat Resmi Indonesia */
+    .surat-resmi {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12pt;
+      line-height: 1.5;
+      color: #000;
+    }
+
+    .surat-resmi p {
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+
+    .surat-resmi table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 12px 0;
+    }
+
+    .surat-resmi table.data-table td {
+      padding: 2.5px 4px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .surat-resmi table.data-table td.label-col {
+      width: 34%;
+    }
+
+    .surat-resmi table.data-table td.sep-col {
+      width: 3%;
+    }
+
+    .judul-surat {
+      text-align: center;
+      font-weight: bold;
+      font-size: 14pt;
+      text-decoration: underline;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .nomor-surat {
+      text-align: center;
+      font-size: 11pt;
+      margin-bottom: 18px;
+    }
+
+    /* Kotak Materai 10.000 */
+    .materai-box {
+      border: 1px dashed #64748b;
+      width: 92px;
+      height: 54px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 8.5pt;
+      color: #475569;
+      margin: 6px 0;
+      line-height: 1.2;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Tipografi CV Modern */
+    .cv-layout {
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.5;
+      color: #1e293b;
+    }
+
+    .cv-ats-layout {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #000000;
+    }
+
+    /* Responsive Scaling Preview Wrapper */
+    .preview-viewport {
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 1024px) {
+      .a4-paper {
+        width: 100%;
+        min-height: auto;
+        padding: 16px 18px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* MEDIA PRINT PRESISI A4 */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        padding: 18mm 20mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        transform: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-20 lg:pb-0">
+
+  <!-- Toast / Message Box Notifikasi (Pengganti alert) -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Modal Riwayat Draft Tersimpan -->
+  <div id="draft-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden">
+      <div class="theme-gradient text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-folder-open text-lg"></i>
+          <h3 class="font-bold text-lg">Riwayat Draft Dokumen Tersimpan</h3>
+        </div>
+        <button onclick="closeDraftModal()" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-5 overflow-y-auto flex-1 space-y-3" id="draft-list-container">
+        <!-- Daftar draft dirender lewat JS -->
+      </div>
+      <div class="bg-slate-50 px-6 py-3 border-t flex justify-between items-center">
+        <span class="text-xs text-slate-500">Data tersimpan aman di browser perangkat ini</span>
+        <button onclick="closeDraftModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-xl text-sm transition">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Profil Pembuat Aplikasi -->
+  <div id="creator-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+      <div class="theme-gradient text-white px-6 pt-6 pb-12 text-center relative">
+        <button onclick="closeCreatorModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition" title="Tutup">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-[11px] font-semibold tracking-wider uppercase mb-1">
+          Profil Pembuat Aplikasi
+        </span>
+        <h3 class="font-bold text-lg">DokumenKu</h3>
+      </div>
+
+      <div class="px-6 pb-6 -mt-10 text-center space-y-4">
+        <!-- Foto Profil Pembuat -->
+        <div class="flex justify-center">
+          <img
+            src="https://raw.githubusercontent.com/superbinomo0-netizen/KASIR/main/PP.jpg"
+            onerror="this.onerror=null;this.src='https://placehold.co/200x200/0f766e/ffffff?text=Ardi+Yusup';"
+            alt="Foto Profil Ardi Yusup"
+            class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg bg-slate-100"
+          />
+        </div>
+
+        <div>
+          <h4 class="text-xl font-extrabold text-slate-800">Ardi Yusup</h4>
+          <p class="text-xs font-medium text-teal-700 mt-0.5">Developer & Creator • DokumenKu</p>
+        </div>
+
+        <!-- Informasi Kontak CP -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-left space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                <i class="fa-brands fa-whatsapp text-lg"></i>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-500 font-medium">Contact Person (CP / WhatsApp)</div>
+                <div class="text-sm font-bold text-slate-800">085867747461</div>
+              </div>
+            </div>
+            <button onclick="copyCreatorPhone()" class="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition" title="Salin Nomor">
+              <i class="fa-regular fa-copy mr-1"></i>Salin
+            </button>
+          </div>
+        </div>
+
+        <!-- Tombol Hubungi & Tutup -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <a href="https://wa.me/6285867747461" target="_blank" rel="noopener noreferrer" class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span>Chat WhatsApp</span>
+          </a>
+          <button onclick="closeCreatorModal()" class="py-2.5 px-4 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs sm:text-sm transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER / TOP BAR -->
+  <header class="theme-gradient text-white shadow-md sticky top-0 z-30 no-print">
+    <div class="max-w-[1600px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-xl shadow-inner">
+          <i class="fa-solid fa-file-signature"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight">DokumenKu</h1>
+          <p class="text-xs text-white/85">Layanan Dokumen Berkah • Generator Surat & CV Instan</p>
+        </div>
+      </div>
+
+      <!-- Kontrol Tema Warna & Riwayat Draft -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Pemilih Tema Gradien -->
+        <div class="flex items-center gap-1.5 bg-white/15 px-2.5 py-1.5 rounded-xl" title="Ubah Warna Tema">
+          <span class="text-xs hidden md:inline text-white/90 mr-1"><i class="fa-solid fa-palette"></i> Tema:</span>
+          <button onclick="setTheme('#0f766e', '#0369a1', '#0d9488')" class="w-5 h-5 rounded-full bg-gradient-to-br from-teal-600 to-sky-700 border-2 border-white shadow-xs hover:scale-110 transition" title="Tosca Samudra"></button>
+          <button onclick="setTheme('#1e3a8a', '#4338ca', '#2563eb')" class="w-5 h-5 rounded-full bg-gradient-to-br from-blue-900 to-indigo-700 border-2 border-white shadow-xs hover:scale-110 transition" title="Biru Korporat"></button>
+          <button onclick="setTheme('#065f46', '#15803d', '#059669')" class="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-800 to-green-700 border-2 border-white shadow-xs hover:scale-110 transition" title="Hijau Berkah"></button>
+          <button onclick="setTheme('#7c2d12', '#b45309', '#d97706')" class="w-5 h-5 rounded-full bg-gradient-to-br from-orange-900 to-amber-700 border-2 border-white shadow-xs hover:scale-110 transition" title="Cokelat Klasik"></button>
+          <button onclick="setTheme('#334155', '#0f172a', '#475569')" class="w-5 h-5 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 border-2 border-white shadow-xs hover:scale-110 transition" title="Elegan Gelap"></button>
+        </div>
+
+        <!-- Tombol Draft -->
+        <button onclick="saveCurrentDraft()" class="px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs sm:text-sm font-medium flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span class="hidden sm:inline">Simpan Draft</span>
+        </button>
+        <button onclick="openDraftModal()" class="px-3 py-2 bg-white text-slate-800 hover:bg-slate-100 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-xs transition relative">
+          <i class="fa-solid fa-folder-open theme-text"></i>
+          <span class="hidden sm:inline">Draft</span>
+          <span id="draft-badge" class="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+        <button onclick="openCreatorModal()" class="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs sm:text-sm font-medium flex items-center gap-2 transition" title="Profil Pembuat Aplikasi">
+          <img
+            src="https://raw.githubusercontent.com/superbinomo0-netizen/KASIR/main/PP.jpg"
+            onerror="this.onerror=null;this.src='https://placehold.co/80x80/0f766e/ffffff?text=AY';"
+            alt="Ardi Yusup"
+            class="w-6 h-6 rounded-full object-cover border border-white/80"
+          />
+          <span class="hidden md:inline">Pembuat</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <div class="flex-1 max-w-[1600px] w-full mx-auto flex flex-col lg:flex-row">
+
+    <!-- SIDEBAR NAVIGASI DOKUMEN (Desktop) -->
+    <aside class="hidden lg:flex flex-col w-68 shrink-0 bg-white border-r border-slate-200 p-3 gap-1.5 no-print">
+      <div class="px-3 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+        Pilih Master Dokumen (9)
+      </div>
+      <nav id="desktop-doc-menu" class="space-y-1">
+        <!-- Menu dirender lewat JS -->
+      </nav>
+
+      <!-- Kartu Profil Pembuat di Sidebar -->
+      <div onclick="openCreatorModal()" class="mt-auto p-3 rounded-2xl bg-slate-50 hover:bg-teal-50/70 border border-slate-200/90 hover:border-teal-300 cursor-pointer transition space-y-2.5">
+        <div class="flex items-center gap-2.5">
+          <img
+            src="https://raw.githubusercontent.com/superbinomo0-netizen/KASIR/main/PP.jpg"
+            onerror="this.onerror=null;this.src='https://placehold.co/100x100/0f766e/ffffff?text=AY';"
+            alt="Ardi Yusup"
+            class="w-11 h-11 rounded-full object-cover border-2 border-teal-600 shrink-0 bg-white"
+          />
+          <div class="min-w-0">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-teal-700">Pembuat Aplikasi</div>
+            <div class="font-bold text-sm text-slate-800 truncate">Ardi Yusup</div>
+            <div class="text-xs text-slate-600 flex items-center gap-1 mt-0.5">
+              <i class="fa-brands fa-whatsapp text-emerald-600"></i>
+              <span>085867747461</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MOBILE HORIZONTAL MENU PILIHAN DOKUMEN -->
+    <div class="lg:hidden bg-white border-b border-slate-200 px-3 py-2.5 overflow-x-auto no-print">
+      <div id="mobile-doc-menu" class="flex items-center gap-2 min-w-max">
+        <!-- Menu mobile dirender lewat JS -->
+      </div>
+    </div>
+
+    <!-- PANEL FORM INPUT & PENGATURAN SURAT (Kiri / Atas) -->
+    <section class="w-full lg:w-[440px] xl:w-[470px] shrink-0 bg-white lg:border-r border-slate-200 flex flex-col no-print">
+      <!-- Toolbar Form -->
+      <div class="p-4 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider theme-text">Formulir Isian</span>
+          <h2 id="current-doc-title" class="font-bold text-slate-800 text-base">Curriculum Vitae (CV)</h2>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="fillDummyData()" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition" title="Isi data contoh otomatis">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Isi Contoh
+          </button>
+          <button onclick="resetCurrentForm()" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition" title="Kosongkan formulir">
+            <i class="fa-solid fa-rotate-left"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Area Form Scrollable -->
+      <div class="p-4 space-y-5 overflow-y-auto lg:max-h-[calc(100vh-135px)]">
+
+        <!-- BAGIAN KHUSUS: PILIHAN MODEL DESAIN CV & WARNA AKSEN (Hanya tampil saat tab CV aktif) -->
+        <div id="cv-design-settings-card" class="rounded-2xl border border-slate-200 bg-slate-50/90 p-3.5 space-y-3.5 shadow-2xs">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-slate-700">
+              <i class="fa-solid fa-layer-group theme-text"></i>
+              <span>Model Desain CV (16 Pilihan)</span>
+            </div>
+            <span id="cv-active-model-badge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800">Klasik Korporat</span>
+          </div>
+
+          <!-- Grid 16 Visual Selector Card (Scrollable rapi) -->
+          <div id="cv-template-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto pr-1">
+            <!-- Dirender dinamis lewat JS -->
+          </div>
+
+          <!-- Pemilih Warna Aksen CV & Opsi Foto -->
+          <div class="pt-2.5 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-semibold text-slate-600 mr-1">Aksen CV:</span>
+              <button type="button" onclick="setCvAccent('#1e3a8a', '#eff6ff', 'Biru Navy')" class="cv-accent-btn w-5 h-5 rounded-full bg-[#1e3a8a] border-2 border-white ring-1 ring-slate-300 hover:scale-110 transition" data-color="#1e3a8a" title="Biru Navy"></button>
+              <button type="button" onclick="setCvAccent('#065f46', '#ecfdf5', 'Hijau Emerald')" class="cv-accent-btn w-5 h-5 rounded-full bg-[#065f46] border-2 border-white ring-1 ring-slate-300 hover:scale-110 transition" data-color="#065f46" title="Hijau Emerald"></button>
+              <button type="button" onclick="setCvAccent('#1e293b', '#f8fafc', 'Slate Hitam')" class="cv-accent-btn w-5 h-5 rounded-full bg-[#1e293b] border-2 border-white ring-1 ring-slate-300 hover:scale-110 transition" data-color="#1e293b" title="Slate Hitam"></button>
+              <button type="button" onclick="setCvAccent('#881337', '#fff1f2', 'Merah Maroon')" class="cv-accent-btn w-5 h-5 rounded-full bg-[#881337] border-2 border-white ring-1 ring-slate-300 hover:scale-110 transition" data-color="#881337" title="Merah Maroon"></button>
+              <button type="button" onclick="setCvAccent('#581c87', '#faf5ff', 'Ungu Royal')" class="cv-accent-btn w-5 h-5 rounded-full bg-[#581c87] border-2 border-white ring-1 ring-slate-300 hover:scale-110 transition" data-color="#581c87" title="Ungu Royal"></button>
+            </div>
+            <label class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 cursor-pointer">
+              <input type="checkbox" id="toggle-cv-photo" checked onchange="renderDocument()" class="rounded text-teal-600 focus:ring-0" />
+              <span>Tampilkan Foto</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- BAGIAN KHUSUS: PENGATURAN TUJUAN SURAT & TANGGAL (Tampil untuk semua surat resmi, disembunyikan pada CV) -->
+        <div id="recipient-settings-card" class="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 space-y-3 shadow-2xs">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+            <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-slate-700">
+              <i class="fa-solid fa-paper-plane theme-text"></i>
+              <span>Pengaturan Tujuan Surat & Tanggal</span>
+            </div>
+            <label class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 cursor-pointer">
+              <input type="checkbox" id="toggle-recipient" checked onchange="renderDocument()" class="rounded text-teal-600 focus:ring-0" />
+              <span>Tampilkan Tujuan</span>
+            </label>
+          </div>
+
+          <div id="recipient-fields-wrapper" class="space-y-2.5">
+            <!-- Tempat & Tanggal Surat -->
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Kota / Tempat Surat</label>
+                <input type="text" id="meta_kota" oninput="renderDocument()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600" placeholder="Jakarta" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Tanggal Surat</label>
+                <input type="text" id="meta_tanggal" oninput="renderDocument()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600" placeholder="21 November 2026" />
+              </div>
+            </div>
+
+            <!-- Nomor Surat (Opsional) -->
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Nomor Surat <span class="text-slate-400 font-normal">(Kosongkan jika surat pribadi)</span></label>
+              <input type="text" id="meta_nomor" oninput="renderDocument()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600" placeholder="Contoh: 012/SK/XI/2026" />
+            </div>
+
+            <!-- Pilihan Tipe Tujuan -->
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Tipe Tujuan ("Kepada Yth:")</label>
+              <select id="meta_tipe_tujuan" onchange="handleRecipientTypeChange()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600">
+                <option value="perusahaan">Perusahaan / Instansi (PT / CV / Dinas)</option>
+                <option value="perorangan">Perorangan (Bapak / Ibu / Saudara)</option>
+                <option value="custom">Custom Bebas (Edit Manual)</option>
+              </select>
+            </div>
+
+            <!-- Input Kepada Yth -->
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Kepada Yth. (Nama PT / Instansi / Orang)</label>
+              <input type="text" id="meta_kepada" oninput="renderDocument()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600" placeholder="HRD Manager PT. Maju Bersama" />
+            </div>
+
+            <!-- Jabatan / Bagian & Alamat Tujuan -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Up. / Jabatan / Bagian</label>
+                <input type="text" id="meta_bagian" oninput="renderDocument()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600" placeholder="Bagian Personalia / Admin" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Alamat / Tempat Tujuan</label>
+                <input type="text" id="meta_alamat_tujuan" oninput="renderDocument()" class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600" placeholder="Di Tempat" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Opsi Materai 10.000 -->
+          <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+            <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+              <input type="checkbox" id="toggle-materai" checked onchange="renderDocument()" class="rounded text-teal-600 focus:ring-0" />
+              <span>Tampilkan Kotak Materai Rp 10.000</span>
+            </label>
+            <span class="text-[11px] text-slate-400">Area TTD</span>
+          </div>
+        </div>
+
+        <!-- FORM DINAMIS SESUAI JENIS DOKUMEN -->
+        <form id="dynamic-form" onsubmit="event.preventDefault()" class="space-y-4">
+          <!-- Field form dirender dinamis lewat JS -->
+        </form>
+
+      </div>
+    </section>
+
+    <!-- PANEL LIVE PREVIEW A4 & EKSPOR (Kanan / Bawah) -->
+    <main class="flex-1 bg-slate-200/75 flex flex-col min-w-0">
+      <!-- Action Bar Ekspor -->
+      <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 no-print">
+        <div class="flex items-center gap-2 text-xs text-slate-600">
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Live Preview A4
+          </span>
+          <span class="hidden sm:inline text-slate-400">|</span>
+          <span class="hidden sm:inline">Siap cetak ukuran standar A4 (210 × 297 mm)</span>
+        </div>
+
+        <!-- Tombol Aksi Ekspor -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="printDocument()" class="theme-gradient hover:opacity-95 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition">
+            <i class="fa-solid fa-print"></i>
+            <span>Cetak / PDF</span>
+          </button>
+          <button onclick="exportToWord()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition">
+            <i class="fa-solid fa-file-word"></i>
+            <span>Word (.doc)</span>
+          </button>
+          <button onclick="exportToPNG()" id="btn-export-png" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 shadow-sm transition">
+            <i class="fa-solid fa-image"></i>
+            <span>Gambar (PNG)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas Viewport Kertas A4 -->
+      <div class="flex-1 p-3 sm:p-6 lg:p-8 overflow-y-auto lg:max-h-[calc(100vh-125px)] preview-viewport">
+        <div id="print-area" class="a4-paper">
+          <!-- Hasil render dokumen A4 muncul di sini -->
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION BAR (KHUSUS MOBILE) -->
+  <nav class="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 px-2 py-1.5 flex justify-around items-center z-40 shadow-lg no-print">
+    <button onclick="scrollToSection('form')" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-600 hover:text-teal-700 text-[11px] font-medium">
+      <i class="fa-solid fa-pen-to-square text-base"></i>
+      <span>Isi Form</span>
+    </button>
+    <button onclick="scrollToSection('preview')" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-600 hover:text-teal-700 text-[11px] font-medium">
+      <i class="fa-solid fa-file-lines text-base"></i>
+      <span>Lihat A4</span>
+    </button>
+    <button onclick="printDocument()" class="flex flex-col items-center gap-0.5 px-3 py-1 theme-text text-[11px] font-bold">
+      <i class="fa-solid fa-print text-base"></i>
+      <span>Cetak PDF</span>
+    </button>
+    <button onclick="openDraftModal()" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-600 text-[11px] font-medium">
+      <i class="fa-solid fa-folder-open text-base"></i>
+      <span>Draft</span>
+    </button>
+    <button onclick="openCreatorModal()" class="flex flex-col items-center gap-0.5 px-3 py-1 text-slate-600 hover:text-teal-700 text-[11px] font-medium">
+      <i class="fa-solid fa-user-tie text-base"></i>
+      <span>Pembuat</span>
+    </button>
+  </nav>
+
+  <script>
+    // =========================================================================
+    // 1. KONFIGURASI MASTER DOKUMEN & DEFINISI FIELD
+    // =========================================================================
+    const DOCUMENT_TYPES = [
+      {
+        id: 'cv',
+        name: 'Curriculum Vitae (CV)',
+        shortName: 'CV Modern',
+        icon: 'fa-id-card-clip',
+        isSurat: false,
+        defaultMaterai: false,
+        fields: [
+          { group: 'Data Pribadi & Foto', items: [
+            { id: 'cv_foto', label: 'Foto Profil (Opsional)', type: 'file' },
+            { id: 'cv_nama', label: 'Nama Lengkap & Gelar', type: 'text', placeholder: 'Ahmad Fauzi, S.Kom.' },
+            { id: 'cv_posisi', label: 'Posisi / Profesi Utama', type: 'text', placeholder: 'Staff Administrasi & Operasional' },
+            { id: 'cv_ttl', label: 'Tempat, Tanggal Lahir', type: 'text', placeholder: 'Jakarta, 14 Mei 1998' },
+            { id: 'cv_telp', label: 'Nomor WhatsApp / HP', type: 'text', placeholder: '0812-3456-7890' },
+            { id: 'cv_email', label: 'Alamat Email', type: 'email', placeholder: 'ahmad.fauzi@email.com' },
+            { id: 'cv_alamat', label: 'Alamat Domisili', type: 'text', placeholder: 'Jl. Merdeka No. 45, Jakarta Selatan' },
+            { id: 'cv_linkedin', label: 'LinkedIn / Portofolio (Opsional)', type: 'text', placeholder: 'linkedin.com/in/ahmadfauzi' }
+          ]},
+          { group: 'Ringkasan Profil', items: [
+            { id: 'cv_ringkasan', label: 'Tentang Saya / Ringkasan Profesional', type: 'textarea', rows: 3, placeholder: 'Lulusan sarjana yang teliti, komunikatif, dan berpengalaman 3 tahun dalam administrasi perkantoran...' }
+          ]},
+          { group: 'Pengalaman Kerja', items: [
+            { id: 'cv_exp1_jabatan', label: 'Jabatan Terbaru', type: 'text', placeholder: 'Admin Operasional & Gudang' },
+            { id: 'cv_exp1_perusahaan', label: 'Nama Perusahaan & Periode', type: 'text', placeholder: 'PT. Sinar Jaya Abadi (2023 – Sekarang)' },
+            { id: 'cv_exp1_desk', label: 'Deskripsi Tugas (Pisahkan baris baru)', type: 'textarea', rows: 3, placeholder: '- Mengelola pencatatan keluar masuk barang harian\n- Membuat laporan bulanan menggunakan Microsoft Excel' },
+            { id: 'cv_exp2_jabatan', label: 'Jabatan Sebelumnya (Opsional)', type: 'text', placeholder: 'Staff Pelayanan Pelanggan' },
+            { id: 'cv_exp2_perusahaan', label: 'Nama Perusahaan & Periode', type: 'text', placeholder: 'CV. Berkah Mandiri (2021 – 2023)' },
+            { id: 'cv_exp2_desk', label: 'Deskripsi Tugas', type: 'textarea', rows: 2, placeholder: '- Melayani kebutuhan administrasi pelanggan secara langsung\n- Mengarsipkan dokumen transaksi harian' }
+          ]},
+          { group: 'Pendidikan & Keahlian', items: [
+            { id: 'cv_edu_kampus', label: 'Institusi Pendidikan Terakhir', type: 'text', placeholder: 'Universitas Indonesia — S1 Manajemen (IPK 3.65)' },
+            { id: 'cv_edu_tahun', label: 'Tahun Lulus', type: 'text', placeholder: '2016 – 2020' },
+            { id: 'cv_edu_sma', label: 'Pendidikan Sebelumnya (SMA/SMK)', type: 'text', placeholder: 'SMAN 1 Jakarta (2013 – 2016)' },
+            { id: 'cv_skills', label: 'Keahlian & Kompetensi', type: 'textarea', rows: 2, placeholder: 'Microsoft Office (Word, Excel, PowerPoint), Administrasi Perkantoran, Komunikasi Publik, Bahasa Inggris Aktif' },
+            { id: 'cv_bahasa', label: 'Bahasa yang Dikuasai', type: 'text', placeholder: 'Bahasa Indonesia (Aktif), Bahasa Inggris (Menengah)' },
+            { id: 'cv_sertifikasi', label: 'Sertifikasi / Pelatihan (Opsional)', type: 'textarea', rows: 2, placeholder: '- Pelatihan Administrasi Perkantoran Modern (BNSP, 2023)' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_kuasa',
+        name: 'Surat Kuasa Umum',
+        shortName: 'Surat Kuasa',
+        icon: 'fa-handshake',
+        isSurat: true,
+        defaultMaterai: true,
+        defaultRecipient: { show: false, tipe: 'perorangan', kepada: '', bagian: '', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Pihak I (Pemberi Kuasa)', items: [
+            { id: 'sk_p1_nama', label: 'Nama Lengkap Pemberi Kuasa', type: 'text', placeholder: 'Budi Santoso' },
+            { id: 'sk_p1_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3174011205850001' },
+            { id: 'sk_p1_ttl', label: 'Tempat, Tanggal Lahir', type: 'text', placeholder: 'Jakarta, 12 Mei 1985' },
+            { id: 'sk_p1_pekerjaan', label: 'Pekerjaan', type: 'text', placeholder: 'Karyawan Swasta' },
+            { id: 'sk_p1_alamat', label: 'Alamat Lengkap Sesuai KTP', type: 'textarea', rows: 2, placeholder: 'Jl. Melati Raya No. 10, RT 004/RW 002, Kel. Tebet, Jakarta Selatan' }
+          ]},
+          { group: 'Pihak II (Penerima Kuasa)', items: [
+            { id: 'sk_p2_nama', label: 'Nama Lengkap Penerima Kuasa', type: 'text', placeholder: 'Siti Aminah' },
+            { id: 'sk_p2_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3174015508900003' },
+            { id: 'sk_p2_ttl', label: 'Tempat, Tanggal Lahir', type: 'text', placeholder: 'Bandung, 15 Agustus 1990' },
+            { id: 'sk_p2_pekerjaan', label: 'Pekerjaan', type: 'text', placeholder: 'Wiraswasta' },
+            { id: 'sk_p2_alamat', label: 'Alamat Lengkap Sesuai KTP', type: 'textarea', rows: 2, placeholder: 'Jl. Kenanga No. 22, RT 001/RW 005, Kec. Pancoran, Jakarta Selatan' }
+          ]},
+          { group: 'Isi / Keperluan Kuasa', items: [
+            { id: 'sk_keperluan', label: 'Keperluan Pemberian Kuasa', type: 'textarea', rows: 4, placeholder: 'Untuk melakukan pengurusan, penandatanganan dokumen, serta pengambilan berkas administrasi perbankan di Bank Mandiri Cabang Jakarta Sudirman atas nama Pemberi Kuasa.' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_resign',
+        name: 'Surat Pengunduran Diri (Resign)',
+        shortName: 'Surat Resign',
+        icon: 'fa-door-open',
+        isSurat: true,
+        defaultMaterai: false,
+        defaultRecipient: { show: true, tipe: 'perusahaan', kepada: 'HRD Manager PT. Maju Sejahtera Nusantara', bagian: 'Divisi Sumber Daya Manusia (HRD)', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Data Karyawan', items: [
+            { id: 'rs_nama', label: 'Nama Lengkap Karyawan', type: 'text', placeholder: 'Rina Marlina' },
+            { id: 'rs_nik_karyawan', label: 'ID / NIK Karyawan (Opsional)', type: 'text', placeholder: 'EMP-2022048' },
+            { id: 'rs_jabatan', label: 'Jabatan / Posisi', type: 'text', placeholder: 'Staff Accounting & Pajak' },
+            { id: 'rs_divisi', label: 'Divisi / Departemen', type: 'text', placeholder: 'Finance & Accounting' },
+            { id: 'rs_perusahaan', label: 'Nama Perusahaan', type: 'text', placeholder: 'PT. Maju Sejahtera Nusantara' }
+          ]},
+          { group: 'Detail Pengunduran Diri', items: [
+            { id: 'rs_tgl_efektif', label: 'Tanggal Efektif Berhenti Kerja', type: 'text', placeholder: '30 November 2026' },
+            { id: 'rs_alasan', label: 'Alasan Pengunduran Diri (Sopan)', type: 'textarea', rows: 3, placeholder: 'Keputusan ini saya ambil karena alasan keluarga serta keinginan untuk mengembangkan karier di bidang yang baru.' },
+            { id: 'rs_ucapan', label: 'Ucapan Terima Kasih & Serah Terima', type: 'textarea', rows: 3, placeholder: 'Saya mengucapkan terima kasih yang sebesar-besarnya atas kesempatan, bimbingan, serta kerja sama yang baik selama saya bekerja di perusahaan ini. Saya siap membantu proses serah terima pekerjaan hingga hari terakhir saya bertugas.' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_bpkb',
+        name: 'Surat Kuasa Pengambilan BPKB / STNK',
+        shortName: 'Kuasa BPKB/STNK',
+        icon: 'fa-car-side',
+        isSurat: true,
+        defaultMaterai: true,
+        defaultRecipient: { show: true, tipe: 'perusahaan', kepada: 'Pimpinan / Bagian Custodial BPKB PT. Adira Dinamika Multi Finance', bagian: 'Cabang Jakarta Selatan', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Jenis Dokumen Kendaraan', items: [
+            { id: 'bk_jenis_dok', label: 'Dokumen yang Diambil', type: 'select', options: ['BPKB (Buku Pemilik Kendaraan Bermotor)', 'STNK (Surat Tanda Nomor Kendaraan) & Plat Nomor', 'BPKB dan STNK Kendaraan'] },
+            { id: 'bk_no_kontrak', label: 'Nomor Kontrak / Perjanjian Kredit (Opsional)', type: 'text', placeholder: '0124-21-009876' }
+          ]},
+          { group: 'Data Pemilik Kendaraan (Pemberi Kuasa)', items: [
+            { id: 'bk_p1_nama', label: 'Nama Pemilik Sesuai STNK/BPKB', type: 'text', placeholder: 'Hendra Wijaya' },
+            { id: 'bk_p1_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3275011004820007' },
+            { id: 'bk_p1_alamat', label: 'Alamat Lengkap', type: 'textarea', rows: 2, placeholder: 'Jl. Ahmad Yani No. 88, Bekasi Selatan' }
+          ]},
+          { group: 'Data Penerima Kuasa', items: [
+            { id: 'bk_p2_nama', label: 'Nama Penerima Kuasa', type: 'text', placeholder: 'Dedi Kurniawan' },
+            { id: 'bk_p2_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3275012209880002' },
+            { id: 'bk_p2_hubungan', label: 'Hubungan dengan Pemilik', type: 'text', placeholder: 'Adik Kandung / Rekan Kerja' },
+            { id: 'bk_p2_alamat', label: 'Alamat Penerima Kuasa', type: 'textarea', rows: 2, placeholder: 'Jl. Cut Mutia No. 15, Bekasi Timur' }
+          ]},
+          { group: 'Identitas Kendaraan', items: [
+            { id: 'bk_merk', label: 'Merk / Tipe Kendaraan', type: 'text', placeholder: 'Honda Vario 160 ABS / Toyota Avanza 1.5 G' },
+            { id: 'bk_tahun', label: 'Tahun Pembuatan / Warna', type: 'text', placeholder: '2022 / Hitam Metalik' },
+            { id: 'bk_nopol', label: 'Nomor Polisi (Plat)', type: 'text', placeholder: 'B 4512 KXY' },
+            { id: 'bk_norangka', label: 'Nomor Rangka', type: 'text', placeholder: 'MH1KF8112NK123456' },
+            { id: 'bk_nomesin', label: 'Nomor Mesin', type: 'text', placeholder: 'KF81E-1123456' },
+            { id: 'bk_atas_nama', label: 'Atas Nama di BPKB / STNK', type: 'text', placeholder: 'Hendra Wijaya' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_pernyataan',
+        name: 'Surat Pernyataan (Multi-Jenis)',
+        shortName: 'Surat Pernyataan',
+        icon: 'fa-file-shield',
+        isSurat: true,
+        defaultMaterai: true,
+        defaultRecipient: { show: false, tipe: 'perusahaan', kepada: '', bagian: '', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Kategori Pernyataan', items: [
+            { id: 'sp_kategori', label: 'Pilih Template Pernyataan', type: 'select', options: [
+              'Surat Pernyataan Kesanggupan Kerja / Penempatan',
+              'Surat Pernyataan Belum Pernah Menikah',
+              'Surat Pernyataan Tidak Menuntut / Kesepakatan Damai',
+              'Surat Pernyataan Bebas Narkoba & Zat Adiktif',
+              'Surat Pernyataan Kebenaran Dokumen',
+              'Surat Pernyataan Custom (Isi Bebas)'
+            ], onChangeExtra: 'applyPernyataanPreset()' }
+          ]},
+          { group: 'Identitas Yang Menyatakan', items: [
+            { id: 'sp_nama', label: 'Nama Lengkap', type: 'text', placeholder: 'Andi Pratama' },
+            { id: 'sp_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3173051907960004' },
+            { id: 'sp_ttl', label: 'Tempat, Tanggal Lahir', type: 'text', placeholder: 'Surabaya, 19 Juli 1996' },
+            { id: 'sp_agama', label: 'Agama / Status Perkawinan', type: 'text', placeholder: 'Islam / Belum Kawin' },
+            { id: 'sp_pekerjaan', label: 'Pekerjaan', type: 'text', placeholder: 'Pelamar Kerja / Karyawan' },
+            { id: 'sp_alamat', label: 'Alamat Lengkap', type: 'textarea', rows: 2, placeholder: 'Jl. Kebon Jeruk Raya No. 12, Jakarta Barat' }
+          ]},
+          { group: 'Isi Butir Pernyataan', items: [
+            { id: 'sp_isi', label: 'Isi Pernyataan (Dapat diedit bebas)', type: 'textarea', rows: 5, placeholder: 'Dengan ini menyatakan dengan sesungguhnya bahwa saya bersedia mematuhi seluruh peraturan perusahaan dan bersedia ditempatkan di seluruh wilayah operasional perusahaan di Indonesia.' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_lamaran',
+        name: 'Surat Lamaran Kerja',
+        shortName: 'Lamaran Kerja',
+        icon: 'fa-briefcase',
+        isSurat: true,
+        defaultMaterai: false,
+        defaultRecipient: { show: true, tipe: 'perusahaan', kepada: 'Yth. Bapak/Ibu HRD Manager PT. Nusantara Digital Indonesia', bagian: 'Divisi Rekrutmen', alamat: 'Jl. Jend. Sudirman Kav. 25, Jakarta' },
+        fields: [
+          { group: 'Detail Lowongan', items: [
+            { id: 'lm_posisi', label: 'Posisi yang Dilamar', type: 'text', placeholder: 'Staff Administrasi Keuangan' },
+            { id: 'lm_sumber', label: 'Sumber Informasi Lowongan', type: 'text', placeholder: 'Portal Lowongan Kerja LinkedIn / JobStreet' }
+          ]},
+          { group: 'Data Diri Pelamar', items: [
+            { id: 'lm_nama', label: 'Nama Lengkap', type: 'text', placeholder: 'Nadia Putri Maharani, S.E.' },
+            { id: 'lm_ttl', label: 'Tempat, Tanggal Lahir', type: 'text', placeholder: 'Yogyakarta, 24 Oktober 1999' },
+            { id: 'lm_pendidikan', label: 'Pendidikan Terakhir', type: 'text', placeholder: 'S1 Akuntansi — Universitas Gadjah Mada' },
+            { id: 'lm_telp', label: 'Nomor Telepon / WhatsApp', type: 'text', placeholder: '0857-1122-3344' },
+            { id: 'lm_email', label: 'Alamat Email', type: 'text', placeholder: 'nadiaputri.m@email.com' },
+            { id: 'lm_alamat', label: 'Alamat Domisili', type: 'textarea', rows: 2, placeholder: 'Jl. Tebet Barat Dalam No. 19, Jakarta Selatan' }
+          ]},
+          { group: 'Lampiran Berkas', items: [
+            { id: 'lm_lampiran', label: 'Daftar Lampiran (Pisahkan baris baru)', type: 'textarea', rows: 4, placeholder: '1. Daftar Riwayat Hidup (Curriculum Vitae)\n2. Fotokopi KTP dan Kartu Keluarga\n3. Fotokopi Ijazah Terakhir dan Transkrip Nilai\n4. Pas Foto Terbaru Ukuran 4x6' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_izin',
+        name: 'Surat Izin Tidak Masuk Kerja / Sekolah',
+        shortName: 'Surat Izin/Sakit',
+        icon: 'fa-calendar-xmark',
+        isSurat: true,
+        defaultMaterai: false,
+        defaultRecipient: { show: true, tipe: 'perusahaan', kepada: 'Yth. Bapak/Ibu Pimpinan / Wali Kelas', bagian: 'Bagian Personalia / Sekolah', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Identitas Pemohon Izin', items: [
+            { id: 'iz_status', label: 'Status Pemohon', type: 'select', options: ['Karyawan / Pegawai', 'Siswa / Mahasiswa (Wali Murid)'] },
+            { id: 'iz_nama', label: 'Nama Lengkap', type: 'text', placeholder: 'Dimas Saputra' },
+            { id: 'iz_id', label: 'Jabatan / Kelas / NIM', type: 'text', placeholder: 'Staff Operasional / Kelas XII IPA 2' },
+            { id: 'iz_alamat', label: 'Alamat', type: 'text', placeholder: 'Jl. Cempaka Putih No. 7, Jakarta Pusat' }
+          ]},
+          { group: 'Keterangan Izin', items: [
+            { id: 'iz_jenis', label: 'Jenis Ketidakhadiran', type: 'select', options: ['Sakit', 'Izin Keperluan Keluarga', 'Izin Kepentingan Mendesak'] },
+            { id: 'iz_tanggal', label: 'Hari & Tanggal Izin', type: 'text', placeholder: 'Senin – Selasa, 23 – 24 November 2026' },
+            { id: 'iz_alasan', label: 'Penjelasan Singkat Alasan', type: 'textarea', rows: 3, placeholder: 'Dikarenakan kondisi kesehatan yang kurang fit (demam) dan disarankan oleh dokter untuk beristirahat selama 2 (dua) hari.' },
+            { id: 'iz_wali', label: 'Nama Penandatangan (Pemohon / Orang Tua)', type: 'text', placeholder: 'Dimas Saputra' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_sku',
+        name: 'Surat Keterangan Usaha (SKU) / Domisili',
+        shortName: 'Ket. Usaha (SKU)',
+        icon: 'fa-store',
+        isSurat: true,
+        defaultMaterai: false,
+        defaultRecipient: { show: false, tipe: 'perusahaan', kepada: '', bagian: '', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Identitas Pejabat / Instansi Penerbit', items: [
+            { id: 'sku_instansi', label: 'Nama Kelurahan / Desa / Instansi', type: 'text', placeholder: 'PEMERINTAH KELURAHAN CEMPAKA BARU' },
+            { id: 'sku_kecamatan', label: 'Kecamatan & Kota/Kabupaten', type: 'text', placeholder: 'Kecamatan Kemayoran, Kota Administrasi Jakarta Pusat' },
+            { id: 'sku_pejabat', label: 'Nama Pejabat Penandatangan', type: 'text', placeholder: 'Drs. H. Sulaiman, M.Si.' },
+            { id: 'sku_jabatan_pejabat', label: 'Jabatan Pejabat', type: 'text', placeholder: 'Lurah Cempaka Baru' }
+          ]},
+          { group: 'Data Pemilik & Bidang Usaha', items: [
+            { id: 'sku_nama', label: 'Nama Pemilik Usaha', type: 'text', placeholder: 'Rahmat Hidayat' },
+            { id: 'sku_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3171030803870005' },
+            { id: 'sku_ttl', label: 'Tempat, Tanggal Lahir', type: 'text', placeholder: 'Bogor, 08 Maret 1987' },
+            { id: 'sku_alamat_rumah', label: 'Alamat Tempat Tinggal', type: 'text', placeholder: 'Jl. Harapan Mulia No. 14, RT 003/RW 004' },
+            { id: 'sku_nama_usaha', label: 'Nama Usaha / Toko', type: 'text', placeholder: 'Berkah Jaya Sembako & Agen Sembako' },
+            { id: 'sku_jenis_usaha', label: 'Jenis / Bidang Usaha', type: 'text', placeholder: 'Perdagangan Eceran Kebutuhan Pokok (Sembako)' },
+            { id: 'sku_alamat_usaha', label: 'Alamat Lokasi Usaha', type: 'textarea', rows: 2, placeholder: 'Jl. Raya Cempaka Baru No. 42, RT 005/RW 002, Kel. Cempaka Baru' },
+            { id: 'sku_tahun_berdiri', label: 'Berdiri Sejak Tahun', type: 'text', placeholder: '2021' },
+            { id: 'sku_keperluan', label: 'Keperluan Pengajuan SKU', type: 'text', placeholder: 'Persyaratan Pengajuan Kredit Usaha Rakyat (KUR) Bank' }
+          ]}
+        ]
+      },
+      {
+        id: 'surat_jual_beli',
+        name: 'Surat Jual Beli / Kwitansi Bermaterai',
+        shortName: 'Jual Beli / Kwitansi',
+        icon: 'fa-file-invoice-dollar',
+        isSurat: true,
+        defaultMaterai: true,
+        defaultRecipient: { show: false, tipe: 'perorangan', kepada: '', bagian: '', alamat: 'Di Tempat' },
+        fields: [
+          { group: 'Pihak Penjual (Pihak Pertama)', items: [
+            { id: 'jb_p1_nama', label: 'Nama Lengkap Penjual', type: 'text', placeholder: 'H. Bambang Sutrisno' },
+            { id: 'jb_p1_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3276010506750002' },
+            { id: 'jb_p1_alamat', label: 'Alamat Penjual', type: 'text', placeholder: 'Jl. Margonda Raya No. 102, Depok' }
+          ]},
+          { group: 'Pihak Pembeli (Pihak Kedua)', items: [
+            { id: 'jb_p2_nama', label: 'Nama Lengkap Pembeli', type: 'text', placeholder: 'Eko Prasetyo' },
+            { id: 'jb_p2_nik', label: 'Nomor KTP (NIK)', type: 'text', placeholder: '3276011811890009' },
+            { id: 'jb_p2_alamat', label: 'Alamat Pembeli', type: 'text', placeholder: 'Jl. Nusantara Raya No. 55, Depok' }
+          ]},
+          { group: 'Detail Objek & Nominal Transaksi', items: [
+            { id: 'jb_objek', label: 'Rincian Barang / Kendaraan / Properti yang Dijual', type: 'textarea', rows: 3, placeholder: '1 (satu) unit Sepeda Motor Merk Yamaha NMAX 155 Tahun 2021 Warna Hitam, Nomor Polisi B 3890 EFG, Nomor Rangka MH3SG5620MK123987, lengkap dengan STNK dan BPKB asli.' },
+            { id: 'jb_nominal', label: 'Harga Kesepakatan (Angka)', type: 'text', placeholder: 'Rp 23.500.000,-' },
+            { id: 'jb_terbilang', label: 'Terbilang (Huruf)', type: 'text', placeholder: 'Dua Puluh Tiga Juta Lima Ratus Ribu Rupiah' },
+            { id: 'jb_metode', label: 'Metode Pembayaran', type: 'text', placeholder: 'Tunai / Transfer Bank BCA Lunas' },
+            { id: 'jb_saksi', label: 'Nama Saksi Transaksi (Opsional)', type: 'text', placeholder: '1. Wahyu Hidayat   2. Nurul Hasanah' }
+          ]}
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. STATE APLIKASI & INISIALISASI
+    // =========================================================================
+    let currentDocId = 'cv';
+    let currentCvTemplate = 'klasik';
+    let cvAccentColor = '#1e3a8a';
+    let cvAccentSoft = '#eff6ff';
+    let formData = {};
+    let cvPhotoDataUrl = '';
+    const STORAGE_KEY = 'dokumenku_drafts_v1';
+
+    const CV_TEMPLATES = [
+      {
+        id: 'klasik',
+        name: '1. Klasik Korporat',
+        desc: 'Formal & Rapi',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col justify-between">
+          <div class="flex justify-between items-center border-b border-slate-400 pb-0.5"><div class="w-8 h-1.5 bg-slate-700 rounded-xs"></div><div class="w-2.5 h-3 bg-slate-300 rounded-xs"></div></div>
+          <div class="space-y-0.5"><div class="w-full h-1 bg-slate-200"></div><div class="w-4/5 h-1 bg-slate-200"></div></div>
+        </div>`
+      },
+      {
+        id: 'sidebar',
+        name: '2. Sidebar Kiri',
+        desc: '2 Kolom Gelap',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white overflow-hidden flex">
+          <div class="w-1/3 h-full bg-blue-900 p-1 flex flex-col items-center gap-0.5"><div class="w-2.5 h-2.5 rounded-full bg-white/80"></div><div class="w-full h-0.5 bg-white/40"></div></div>
+          <div class="w-2/3 p-1 space-y-1"><div class="w-8 h-1.5 bg-slate-700 rounded-xs"></div><div class="w-full h-1 bg-slate-200"></div><div class="w-4/5 h-1 bg-slate-200"></div></div>
+        </div>`
+      },
+      {
+        id: 'ats',
+        name: '3. ATS Friendly',
+        desc: 'Minimalis HRD',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col justify-between">
+          <div class="text-center border-b border-black pb-0.5"><div class="w-10 h-1.5 bg-black mx-auto"></div></div>
+          <div class="space-y-0.5"><div class="w-full h-1 bg-slate-300"></div><div class="w-full h-1 bg-slate-300"></div><div class="w-3/4 h-1 bg-slate-300"></div></div>
+        </div>`
+      },
+      {
+        id: 'kreatif',
+        name: '4. Kreatif Studio',
+        desc: 'Banner Header',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white overflow-hidden flex flex-col">
+          <div class="h-3.5 bg-slate-800 px-1 flex items-center justify-between"><div class="w-8 h-1 bg-white rounded-xs"></div><div class="w-2 h-2 rounded-full bg-amber-400"></div></div>
+          <div class="p-1 grid grid-cols-2 gap-1"><div class="h-3 bg-slate-100 rounded-xs"></div><div class="h-3 bg-slate-100 rounded-xs"></div></div>
+        </div>`
+      },
+      {
+        id: 'eksekutif',
+        name: '5. Two-Tone Frame',
+        desc: 'Garis Atas Bawah',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white overflow-hidden flex flex-col justify-between">
+          <div class="h-1.5 bg-teal-700 w-full"></div>
+          <div class="px-1 space-y-0.5"><div class="w-9 h-1.5 bg-slate-700 rounded-xs"></div><div class="w-full h-1 bg-slate-200"></div></div>
+          <div class="h-1 bg-teal-700 w-full"></div>
+        </div>`
+      },
+      {
+        id: 'sidebar_kanan',
+        name: '6. Sidebar Kanan',
+        desc: 'Info di Kanan',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white overflow-hidden flex">
+          <div class="w-2/3 p-1 space-y-1"><div class="w-8 h-1.5 bg-slate-700 rounded-xs"></div><div class="w-full h-1 bg-slate-200"></div><div class="w-4/5 h-1 bg-slate-200"></div></div>
+          <div class="w-1/3 h-full bg-slate-100 border-l border-slate-300 p-1 flex flex-col items-center gap-0.5"><div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div><div class="w-full h-0.5 bg-slate-400"></div></div>
+        </div>`
+      },
+      {
+        id: 'harvard',
+        name: '7. Harvard Akademik',
+        desc: 'Standar Internasional',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col justify-between">
+          <div class="text-center"><div class="w-11 h-1.5 bg-slate-800 mx-auto mb-0.5"></div><div class="w-full h-0.5 bg-slate-400"></div></div>
+          <div class="space-y-0.5"><div class="w-6 h-1 bg-slate-700"></div><div class="w-full h-0.5 bg-slate-300"></div><div class="w-full h-0.5 bg-slate-300"></div></div>
+        </div>`
+      },
+      {
+        id: 'timeline',
+        name: '8. Timeline Modern',
+        desc: 'Garis Waktu Karier',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex gap-1.5">
+          <div class="w-1 bg-teal-600 rounded-full my-0.5"></div>
+          <div class="flex-1 space-y-1"><div class="w-9 h-1.5 bg-slate-800 rounded-xs"></div><div class="w-full h-1 bg-slate-200"></div><div class="w-4/5 h-1 bg-slate-200"></div></div>
+        </div>`
+      },
+      {
+        id: 'kartu_grid',
+        name: '9. Modular Cards',
+        desc: 'Kotak Terpisah',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-slate-100 p-1 grid grid-cols-2 gap-1">
+          <div class="bg-white rounded-xs p-0.5"><div class="w-6 h-1 bg-teal-700"></div></div>
+          <div class="bg-white rounded-xs p-0.5"><div class="w-5 h-1 bg-slate-600"></div></div>
+          <div class="bg-white rounded-xs p-0.5 col-span-2"><div class="w-10 h-1 bg-slate-300"></div></div>
+        </div>`
+      },
+      {
+        id: 'header_tengah',
+        name: '10. Center Elegant',
+        desc: 'Profil Simetris',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col items-center justify-between">
+          <div class="w-2.5 h-2.5 rounded-full bg-teal-700"></div>
+          <div class="w-9 h-1 bg-slate-800"></div>
+          <div class="w-full h-1 bg-slate-200"></div>
+        </div>`
+      },
+      {
+        id: 'swiss_grid',
+        name: '11. Swiss Editorial',
+        desc: 'Label Kiri Tebal',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col justify-between">
+          <div class="w-10 h-2 bg-slate-900"></div>
+          <div class="flex gap-1"><div class="w-1/4 h-1 bg-teal-700"></div><div class="w-3/4 h-1 bg-slate-200"></div></div>
+          <div class="flex gap-1"><div class="w-1/4 h-1 bg-teal-700"></div><div class="w-3/4 h-1 bg-slate-200"></div></div>
+        </div>`
+      },
+      {
+        id: 'split_header',
+        name: '12. Split Header',
+        desc: 'Header 2 Blok',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white overflow-hidden flex flex-col">
+          <div class="h-3.5 flex"><div class="w-2/3 bg-teal-700"></div><div class="w-1/3 bg-slate-800"></div></div>
+          <div class="p-1 space-y-0.5"><div class="w-full h-1 bg-slate-200"></div><div class="w-3/4 h-1 bg-slate-200"></div></div>
+        </div>`
+      },
+      {
+        id: 'infografis',
+        name: '13. Infografis Skill',
+        desc: 'Lencana & Bar',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col justify-between">
+          <div class="flex justify-between"><div class="w-8 h-1.5 bg-teal-700"></div><div class="w-4 h-1.5 bg-amber-400 rounded-full"></div></div>
+          <div class="grid grid-cols-3 gap-0.5"><div class="h-1.5 bg-teal-100 rounded-xs"></div><div class="h-1.5 bg-teal-100 rounded-xs"></div><div class="h-1.5 bg-teal-100 rounded-xs"></div></div>
+          <div class="w-full h-1 bg-slate-200"></div>
+        </div>`
+      },
+      {
+        id: 'monokrom',
+        name: '14. Noir Monokrom',
+        desc: 'Hitam Putih Tegas',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-400 bg-white p-1 flex flex-col justify-between">
+          <div class="bg-black text-white px-1 py-0.5"><div class="w-8 h-1 bg-white"></div></div>
+          <div class="space-y-0.5"><div class="w-full h-1 bg-slate-300"></div><div class="w-4/5 h-1 bg-slate-300"></div></div>
+        </div>`
+      },
+      {
+        id: 'eksekutif_gelap',
+        name: '15. Executive Serif',
+        desc: 'Mewah & Berwibawa',
+        previewHtml: `<div class="w-full h-9 rounded border border-amber-300 bg-amber-50/40 p-1 flex flex-col justify-between">
+          <div class="border-b-2 border-amber-600 pb-0.5"><div class="w-9 h-1.5 bg-slate-800"></div></div>
+          <div class="space-y-0.5"><div class="w-full h-1 bg-slate-300"></div><div class="w-3/4 h-1 bg-slate-300"></div></div>
+        </div>`
+      },
+      {
+        id: 'kompak_padat',
+        name: '16. Compact 1-Page',
+        desc: 'Padat & Lengkap',
+        previewHtml: `<div class="w-full h-9 rounded border border-slate-200 bg-white p-1 flex flex-col justify-between">
+          <div class="flex justify-between"><div class="w-7 h-1.5 bg-teal-700"></div><div class="w-5 h-1 bg-slate-400"></div></div>
+          <div class="grid grid-cols-2 gap-1"><div class="h-3 bg-slate-100"></div><div class="h-3 bg-slate-100"></div></div>
+        </div>`
+      }
+    ];
+
+    function getFormattedIndonesianDate() {
+      const bulan = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      const now = new Date();
+      return `${now.getDate()} ${bulan[now.getMonth()]} ${now.getFullYear()}`;
+    }
+
+    function initApp() {
+      // Set default tanggal hari ini
+      document.getElementById('meta_kota').value = 'Jakarta';
+      document.getElementById('meta_tanggal').value = getFormattedIndonesianDate();
+
+      renderCvTemplateSelector();
+      updateCvAccentButtons();
+      renderMenus();
+      selectDocument('cv');
+      updateDraftBadge();
+    }
+
+    // =========================================================================
+    // 3. NAVIGASI MENU DOKUMEN & TEMA WARNA
+    // =========================================================================
+    function setTheme(fromColor, toColor, accentColor) {
+      document.documentElement.style.setProperty('--theme-from', fromColor);
+      document.documentElement.style.setProperty('--theme-to', toColor);
+      document.documentElement.style.setProperty('--theme-accent', accentColor);
+      showToast('Tema warna berhasil diubah', 'info');
+    }
+
+    function renderMenus() {
+      const desktopMenu = document.getElementById('desktop-doc-menu');
+      const mobileMenu = document.getElementById('mobile-doc-menu');
+      if (!desktopMenu || !mobileMenu) return;
+
+      desktopMenu.innerHTML = '';
+      mobileMenu.innerHTML = '';
+
+      DOCUMENT_TYPES.forEach(doc => {
+        const isActive = doc.id === currentDocId;
+
+        // Desktop Button
+        const dBtn = document.createElement('button');
+        dBtn.type = 'button';
+        dBtn.onclick = () => selectDocument(doc.id);
+        dBtn.className = isActive
+          ? 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl theme-gradient text-white font-semibold text-sm shadow-xs transition text-left'
+          : 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium text-sm transition text-left';
+        dBtn.innerHTML = `
+          <i class="fa-solid ${doc.icon} w-5 text-center ${isActive ? 'text-white' : 'theme-text'}"></i>
+          <span class="truncate">${doc.name}</span>
+        `;
+        desktopMenu.appendChild(dBtn);
+
+        // Mobile Chip Button
+        const mBtn = document.createElement('button');
+        mBtn.type = 'button';
+        mBtn.onclick = () => selectDocument(doc.id);
+        mBtn.className = isActive
+          ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl theme-gradient text-white font-semibold text-xs shadow-xs transition'
+          : 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium text-xs transition';
+        mBtn.innerHTML = `
+          <i class="fa-solid ${doc.icon}"></i>
+          <span>${doc.shortName}</span>
+        `;
+        mobileMenu.appendChild(mBtn);
+      });
+    }
+
+    function renderCvTemplateSelector() {
+      const grid = document.getElementById('cv-template-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      CV_TEMPLATES.forEach(tpl => {
+        const isActive = tpl.id === currentCvTemplate;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.onclick = () => selectCvTemplate(tpl.id);
+        card.className = isActive
+          ? 'p-2 rounded-xl border-2 border-teal-600 bg-white text-left shadow-xs transition flex flex-col gap-1.5'
+          : 'p-2 rounded-xl border border-slate-200 bg-white/70 hover:bg-white text-left transition flex flex-col gap-1.5';
+        card.innerHTML = `
+          ${tpl.previewHtml}
+          <div>
+            <div class="text-[11px] font-bold leading-tight ${isActive ? 'text-teal-700' : 'text-slate-800'}">${tpl.name}</div>
+            <div class="text-[10px] text-slate-500 leading-tight">${tpl.desc}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      const activeObj = CV_TEMPLATES.find(t => t.id === currentCvTemplate);
+      const badge = document.getElementById('cv-active-model-badge');
+      if (badge && activeObj) {
+        badge.textContent = activeObj.name;
+      }
+    }
+
+    function selectCvTemplate(tplId) {
+      currentCvTemplate = tplId;
+      // Untuk model ATS Friendly, foto default disembunyikan (bisa dinyalakan manual)
+      const photoCheckbox = document.getElementById('toggle-cv-photo');
+      if (photoCheckbox) {
+        photoCheckbox.checked = tplId !== 'ats';
+      }
+      renderCvTemplateSelector();
+      renderDocument();
+      const activeObj = CV_TEMPLATES.find(t => t.id === tplId);
+      if (activeObj) {
+        showToast(`Model CV diubah ke: ${activeObj.name}`, 'info');
+      }
+    }
+
+    function setCvAccent(mainColor, softColor, label) {
+      cvAccentColor = mainColor;
+      cvAccentSoft = softColor;
+      updateCvAccentButtons();
+      renderDocument();
+      showToast(`Warna aksen CV: ${label}`, 'info');
+    }
+
+    function updateCvAccentButtons() {
+      document.querySelectorAll('.cv-accent-btn').forEach(btn => {
+        if (btn.dataset.color === cvAccentColor) {
+          btn.classList.add('ring-2', 'ring-offset-1', 'ring-slate-800', 'scale-110');
+        } else {
+          btn.classList.remove('ring-2', 'ring-offset-1', 'ring-slate-800', 'scale-110');
+        }
+      });
+    }
+
+    function selectDocument(docId) {
+      currentDocId = docId;
+      const docConfig = DOCUMENT_TYPES.find(d => d.id === docId);
+
+      document.getElementById('current-doc-title').textContent = docConfig.name;
+
+      // Atur visibilitas panel Model CV vs Tujuan Surat & Materai
+      const cvDesignCard = document.getElementById('cv-design-settings-card');
+      const recipientCard = document.getElementById('recipient-settings-card');
+      if (docConfig.isSurat) {
+        cvDesignCard.classList.add('hidden');
+        recipientCard.classList.remove('hidden');
+        const defRec = docConfig.defaultRecipient || { show: true, tipe: 'perusahaan', kepada: '', bagian: '', alamat: 'Di Tempat' };
+        document.getElementById('toggle-recipient').checked = defRec.show;
+        document.getElementById('meta_tipe_tujuan').value = defRec.tipe;
+        document.getElementById('meta_kepada').value = defRec.kepada || '';
+        document.getElementById('meta_bagian').value = defRec.bagian || '';
+        document.getElementById('meta_alamat_tujuan').value = defRec.alamat || 'Di Tempat';
+        document.getElementById('toggle-materai').checked = !!docConfig.defaultMaterai;
+      } else {
+        cvDesignCard.classList.remove('hidden');
+        recipientCard.classList.add('hidden');
+      }
+
+      renderMenus();
+      buildDynamicForm(docConfig);
+      renderDocument();
+    }
+
+    function handleRecipientTypeChange() {
+      const tipe = document.getElementById('meta_tipe_tujuan').value;
+      const kepadaInput = document.getElementById('meta_kepada');
+      const bagianInput = document.getElementById('meta_bagian');
+
+      if (tipe === 'perusahaan' && !kepadaInput.value) {
+        kepadaInput.placeholder = 'HRD Manager PT. Maju Mundur';
+        bagianInput.placeholder = 'Divisi Personalia / HRD';
+      } else if (tipe === 'perorangan' && !kepadaInput.value) {
+        kepadaInput.placeholder = 'Bapak/Ibu Ahmad Subarjo';
+        bagianInput.placeholder = 'Selaku Pihak Terkait';
+      } else {
+        kepadaInput.placeholder = 'Tuliskan tujuan surat bebas...';
+        bagianInput.placeholder = 'Keterangan tambahan';
+      }
+      renderDocument();
+    }
+
+    // =========================================================================
+    // 4. PEMBANGUN FORM INPUT DINAMIS
+    // =========================================================================
+    function buildDynamicForm(docConfig) {
+      const formEl = document.getElementById('dynamic-form');
+      formEl.innerHTML = '';
+
+      docConfig.fields.forEach(group => {
+        const groupBox = document.createElement('div');
+        groupBox.className = 'rounded-2xl border border-slate-200 p-3.5 space-y-3 bg-white';
+
+        const groupTitle = document.createElement('h3');
+        groupTitle.className = 'font-bold text-xs uppercase tracking-wider text-slate-700 border-b border-slate-100 pb-2';
+        groupTitle.textContent = group.group;
+        groupBox.appendChild(groupTitle);
+
+        group.items.forEach(field => {
+          const wrapper = document.createElement('div');
+          const label = document.createElement('label');
+          label.className = 'block text-xs font-medium text-slate-600 mb-1';
+          label.textContent = field.label;
+          wrapper.appendChild(label);
+
+          const savedVal = formData[field.id] || '';
+
+          if (field.type === 'textarea') {
+            const ta = document.createElement('textarea');
+            ta.id = field.id;
+            ta.rows = field.rows || 3;
+            ta.placeholder = field.placeholder || '';
+            ta.value = savedVal;
+            ta.className = 'w-full px-3 py-2 text-sm bg-slate-50 focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600 transition';
+            ta.oninput = (e) => {
+              formData[field.id] = e.target.value;
+              renderDocument();
+            };
+            wrapper.appendChild(ta);
+          } else if (field.type === 'select') {
+            const sel = document.createElement('select');
+            sel.id = field.id;
+            sel.className = 'w-full px-3 py-2 text-sm bg-slate-50 focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600 transition';
+            field.options.forEach(opt => {
+              const o = document.createElement('option');
+              o.value = opt;
+              o.textContent = opt;
+              if (savedVal === opt) o.selected = true;
+              sel.appendChild(o);
+            });
+            if (!savedVal && field.options.length) {
+              formData[field.id] = field.options[0];
+            }
+            sel.onchange = (e) => {
+              formData[field.id] = e.target.value;
+              if (field.onChangeExtra === 'applyPernyataanPreset()') {
+                applyPernyataanPreset();
+              }
+              renderDocument();
+            };
+            wrapper.appendChild(sel);
+          } else if (field.type === 'file') {
+            const fileRow = document.createElement('div');
+            fileRow.className = 'flex items-center gap-2';
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            inp.accept = 'image/*';
+            inp.className = 'w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100';
+            inp.onchange = handlePhotoUpload;
+            fileRow.appendChild(inp);
+
+            if (cvPhotoDataUrl) {
+              const clearBtn = document.createElement('button');
+              clearBtn.type = 'button';
+              clearBtn.className = 'px-2 py-1 text-xs text-rose-600 hover:bg-rose-50 rounded-lg';
+              clearBtn.textContent = 'Hapus';
+              clearBtn.onclick = () => {
+                cvPhotoDataUrl = '';
+                buildDynamicForm(docConfig);
+                renderDocument();
+              };
+              fileRow.appendChild(clearBtn);
+            }
+            wrapper.appendChild(fileRow);
+          } else {
+            const inp = document.createElement('input');
+            inp.type = field.type || 'text';
+            inp.id = field.id;
+            inp.placeholder = field.placeholder || '';
+            inp.value = savedVal;
+            inp.className = 'w-full px-3 py-1.5 text-sm bg-slate-50 focus:bg-white border border-slate-300 rounded-xl focus:outline-none focus:border-teal-600 transition';
+            inp.oninput = (e) => {
+              formData[field.id] = e.target.value;
+              renderDocument();
+            };
+            wrapper.appendChild(inp);
+          }
+
+          groupBox.appendChild(wrapper);
+        });
+
+        formEl.appendChild(groupBox);
+      });
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        cvPhotoDataUrl = e.target.result;
+        const docConfig = DOCUMENT_TYPES.find(d => d.id === currentDocId);
+        buildDynamicForm(docConfig);
+        renderDocument();
+        showToast('Foto profil berhasil dimuat', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function applyPernyataanPreset() {
+      const kat = formData['sp_kategori'] || '';
+      let presetText = '';
+      if (kat.includes('Kesanggupan')) {
+        presetText = 'Dengan ini menyatakan dengan sesungguhnya bahwa saya bersedia mematuhi seluruh peraturan serta tata tertib yang berlaku di perusahaan, dan sanggup ditempatkan di seluruh wilayah operasional perusahaan di Indonesia apabila dinyatakan diterima bekerja.';
+      } else if (kat.includes('Belum Pernah Menikah')) {
+        presetText = 'Dengan ini menyatakan dengan sesungguhnya bahwa sampai dengan saat surat pernyataan ini dibuat, saya berstatus BELUM PERNAH MENIKAH secara hukum negara maupun hukum agama, dan bersedia tidak menikah selama masa ikatan dinas/pelatihan berlangsung.';
+      } else if (kat.includes('Tidak Menuntut')) {
+        presetText = 'Dengan ini menyatakan bahwa permasalahan yang terjadi antara kedua belah pihak telah diselesaikan secara musyawarah dan kekeluargaan. Saya menyatakan tidak akan menuntut secara hukum pidana maupun perdata di kemudian hari atas kejadian tersebut.';
+      } else if (kat.includes('Bebas Narkoba')) {
+        presetText = 'Dengan ini menyatakan dengan sesungguhnya bahwa saya tidak pernah mengonsumsi, menggunakan, memiliki, maupun terlibat dalam peredaran Narkotika, Psikotropika, dan Zat Adiktif lainnya (NAPZA), serta bersedia menjalani tes kesehatan sewaktu-waktu.';
+      } else if (kat.includes('Kebenaran Dokumen')) {
+        presetText = 'Dengan ini menyatakan bahwa seluruh data, keterangan, dan dokumen lamaran yang saya lampirkan adalah benar, sah, dan dapat dipertanggungjawabkan secara hukum. Apabila di kemudian hari ditemukan ketidaksesuaian, saya bersedia menerima sanksi sesuai ketentuan yang berlaku.';
+      }
+      if (presetText) {
+        formData['sp_isi'] = presetText;
+        const ta = document.getElementById('sp_isi');
+        if (ta) ta.value = presetText;
+      }
+    }
+
+    // =========================================================================
+    // 5. AUTO-FILL CONTOH DATA & RESET FORM
+    // =========================================================================
+    function fillDummyData() {
+      const docConfig = DOCUMENT_TYPES.find(d => d.id === currentDocId);
+      docConfig.fields.forEach(g => {
+        g.items.forEach(item => {
+          if (item.type === 'file') return;
+          if (item.type === 'select') {
+            formData[item.id] = item.options[0];
+          } else if (item.placeholder) {
+            formData[item.id] = item.placeholder;
+          }
+        });
+      });
+
+      if (docConfig.isSurat && docConfig.defaultRecipient) {
+        document.getElementById('meta_kepada').value = docConfig.defaultRecipient.kepada || 'Yth. Bapak/Ibu Pimpinan PT. Sejahtera Utama';
+        document.getElementById('meta_bagian').value = docConfig.defaultRecipient.bagian || 'Bagian Administrasi';
+        document.getElementById('meta_alamat_tujuan').value = docConfig.defaultRecipient.alamat || 'Di Tempat';
+      }
+
+      buildDynamicForm(docConfig);
+      renderDocument();
+      showToast('Contoh data berhasil diisikan ke formulir!', 'success');
+    }
+
+    function resetCurrentForm() {
+      const docConfig = DOCUMENT_TYPES.find(d => d.id === currentDocId);
+      docConfig.fields.forEach(g => {
+        g.items.forEach(item => {
+          delete formData[item.id];
+        });
+      });
+      if (currentDocId === 'cv') {
+        cvPhotoDataUrl = '';
+      }
+      buildDynamicForm(docConfig);
+      renderDocument();
+      showToast('Formulir telah dikosongkan', 'info');
+    }
+
+    // =========================================================================
+    // 6. HELPER RENDERING HTML SURAT & CV
+    // =========================================================================
+    function val(id, fallback = '') {
+      const v = formData[id];
+      return (v && v.trim() !== '') ? escapeHtml(v) : (fallback ? `<span style="color:#64748b">${escapeHtml(fallback)}</span>` : '........................................');
+    }
+
+    function rawVal(id, fallback = '') {
+      const v = formData[id];
+      return (v && v.trim() !== '') ? v : fallback;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function nl2br(str) {
+      return escapeHtml(str).replace(/\n/g, '<br>');
+    }
+
+    function renderRecipientHeader() {
+      const showRec = document.getElementById('toggle-recipient').checked;
+      const kota = escapeHtml(document.getElementById('meta_kota').value || 'Jakarta');
+      const tanggal = escapeHtml(document.getElementById('meta_tanggal').value || getFormattedIndonesianDate());
+      const kepada = escapeHtml(document.getElementById('meta_kepada').value || '');
+      const bagian = escapeHtml(document.getElementById('meta_bagian').value || '');
+      const alamatTujuan = escapeHtml(document.getElementById('meta_alamat_tujuan').value || 'Di Tempat');
+
+      let html = `
+        <div style="text-align: right; margin-bottom: 16px;">
+          ${kota}, ${tanggal}
+        </div>
+      `;
+
+      if (showRec && (kepada || bagian || alamatTujuan)) {
+        html += `
+          <div style="margin-bottom: 18px; line-height: 1.45;">
+            <div>Kepada Yth.</div>
+            ${kepada ? `<div><strong>${kepada}</strong></div>` : ''}
+            ${bagian ? `<div>${bagian}</div>` : ''}
+            <div>${alamatTujuan}</div>
+          </div>
+        `;
+      }
+      return html;
+    }
+
+    function renderMateraiBlock() {
+      const showMaterai = document.getElementById('toggle-materai').checked;
+      if (!showMaterai) {
+        return `<div style="height: 66px;"></div>`;
+      }
+      return `
+        <div style="height: 66px; display: flex; align-items: center; justify-content: center;">
+          <div class="materai-box">
+            <span>MATERAI</span>
+            <strong>Rp 10.000</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    // =========================================================================
+    // 7. ENGINE RENDER DOKUMEN A4
+    // =========================================================================
+    function renderDocument() {
+      const printArea = document.getElementById('print-area');
+      const kota = escapeHtml(document.getElementById('meta_kota').value || 'Jakarta');
+      const tanggal = escapeHtml(document.getElementById('meta_tanggal').value || getFormattedIndonesianDate());
+      const nomorSurat = escapeHtml(document.getElementById('meta_nomor').value || '');
+
+      // -----------------------------------------------------------------------
+      // A. RENDER CURRICULUM VITAE (CV) — 5 MODEL DESAIN
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'cv') {
+        const accent = cvAccentColor || '#1e3a8a';
+        const softBg = cvAccentSoft || '#eff6ff';
+        const showPhoto = document.getElementById('toggle-cv-photo') ? document.getElementById('toggle-cv-photo').checked : true;
+
+        const nama = rawVal('cv_nama', 'NAMA LENGKAP ANDA');
+        const posisi = rawVal('cv_posisi', 'Posisi / Profesi yang Dilamar');
+        const ttl = rawVal('cv_ttl', 'Jakarta, 14 Mei 1998');
+        const telp = rawVal('cv_telp', '0812-3456-7890');
+        const email = rawVal('cv_email', 'email.anda@domain.com');
+        const alamat = rawVal('cv_alamat', 'Jl. Merdeka No. 45, Jakarta Selatan');
+        const linkedin = rawVal('cv_linkedin', '');
+        const ringkasan = rawVal('cv_ringkasan', 'Tuliskan ringkasan singkat mengenai latar belakang pendidikan, pengalaman kerja, serta keahlian utama Anda secara jelas dan profesional.');
+
+        const exp1Jab = rawVal('cv_exp1_jabatan', 'Jabatan / Posisi Kerja Terbaru');
+        const exp1Per = rawVal('cv_exp1_perusahaan', 'Nama Perusahaan (Tahun Mulai – Sekarang)');
+        const exp1Desk = rawVal('cv_exp1_desk', '- Mengelola pencatatan administrasi dan operasional harian\n- Menyusun laporan berkala secara akurat dan tepat waktu');
+
+        const exp2Jab = rawVal('cv_exp2_jabatan', '');
+        const exp2Per = rawVal('cv_exp2_perusahaan', '');
+        const exp2Desk = rawVal('cv_exp2_desk', '');
+
+        const eduKampus = rawVal('cv_edu_kampus', 'Nama Perguruan Tinggi — Jurusan / Program Studi');
+        const eduTahun = rawVal('cv_edu_tahun', '2016 – 2020');
+        const eduSma = rawVal('cv_edu_sma', '');
+
+        const skills = rawVal('cv_skills', 'Microsoft Office (Word, Excel, PowerPoint), Administrasi Perkantoran, Komunikasi & Kerja Tim');
+        const bahasa = rawVal('cv_bahasa', 'Bahasa Indonesia (Aktif), Bahasa Inggris (Menengah)');
+        const sertif = rawVal('cv_sertifikasi', '');
+
+        const getPhotoMarkup = (w, h, radius, borderCol, placeholderBg = '#f8fafc', placeholderText = '#94a3b8') => {
+          if (!showPhoto) return '';
+          if (cvPhotoDataUrl) {
+            return `<img src="${cvPhotoDataUrl}" alt="Foto Profil" style="width: ${w}; height: ${h}; object-fit: cover; border-radius: ${radius}; border: 2.5px solid ${borderCol}; display: block;" />`;
+          }
+          return `<div style="width: ${w}; height: ${h}; border-radius: ${radius}; border: 1.5px dashed ${borderCol}; background: ${placeholderBg}; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 8.5pt; color: ${placeholderText}; padding: 4px;">Pas Foto<br>3x4</div>`;
+        };
+
+        // --- MODEL 1: KLASIK KORPORAT ---
+        if (currentCvTemplate === 'klasik') {
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; border-bottom: 2.5px solid ${accent}; padding-bottom: 14px; margin-bottom: 16px;">
+                <div style="flex: 1;">
+                  <h1 style="font-size: 20pt; font-weight: 700; color: #0f172a; margin: 0 0 2px 0; line-height: 1.2;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11.5pt; font-weight: 600; color: ${accent}; margin-bottom: 10px;">${escapeHtml(posisi)}</div>
+                  <table style="font-size: 9.5pt; color: #334155; border-collapse: collapse;">
+                    <tr>
+                      <td style="padding: 1.5px 14px 1.5px 0;"><strong>TTL:</strong> ${escapeHtml(ttl)}</td>
+                      <td style="padding: 1.5px 0;"><strong>Telepon:</strong> ${escapeHtml(telp)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 1.5px 14px 1.5px 0;"><strong>Email:</strong> ${escapeHtml(email)}</td>
+                      ${linkedin ? `<td style="padding: 1.5px 0;"><strong>Profil:</strong> ${escapeHtml(linkedin)}</td>` : '<td></td>'}
+                    </tr>
+                    <tr>
+                      <td colspan="2" style="padding: 1.5px 0;"><strong>Alamat:</strong> ${escapeHtml(alamat)}</td>
+                    </tr>
+                  </table>
+                </div>
+                <div>${getPhotoMarkup('92px', '114px', '8px', accent)}</div>
+              </div>
+
+              <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">Ringkasan Profesional</h2>
+                <p style="margin: 0; text-align: justify; color: #334155;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 8px;">Pengalaman Kerja</h2>
+                <div style="margin-bottom: 10px;">
+                  <div style="font-weight: 700; font-size: 10.5pt; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                  <div style="font-size: 9.5pt; font-weight: 600; color: #475569; margin-bottom: 4px;">${escapeHtml(exp1Per)}</div>
+                  <div style="color: #334155; padding-left: 4px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: 700; font-size: 10.5pt; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                    <div style="font-size: 9.5pt; font-weight: 600; color: #475569; margin-bottom: 4px;">${escapeHtml(exp2Per)}</div>
+                    <div style="color: #334155; padding-left: 4px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 8px;">Riwayat Pendidikan</h2>
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(eduKampus)}</div>
+                  <div style="font-size: 9.5pt; color: #64748b; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                </div>
+                ${eduSma ? `<div style="margin-top: 4px; color: #334155;">${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">Keahlian & Bahasa</h2>
+                <p style="margin: 0 0 4px 0; color: #334155;"><strong>Keahlian:</strong> ${nl2br(skills)}</p>
+                ${bahasa ? `<p style="margin: 0; color: #334155;"><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</p>` : ''}
+              </div>
+
+              ${sertif ? `
+                <div>
+                  <h2 style="font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; margin-bottom: 6px;">Pelatihan & Sertifikasi</h2>
+                  <div style="color: #334155;">${nl2br(sertif)}</div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 2: MODERN DUA KOLOM (SIDEBAR KIRI BERWARNA) ---
+        if (currentCvTemplate === 'sidebar') {
+          const skillTags = skills.split(',').map(s => s.trim()).filter(Boolean).map(s =>
+            `<div style="background: rgba(255,255,255,0.14); padding: 4px 8px; border-radius: 5px; font-size: 8.8pt; margin-bottom: 5px; color: #ffffff;">• ${escapeHtml(s)}</div>`
+          ).join('');
+
+          printArea.innerHTML = `
+            <div class="cv-layout" style="margin: -20mm -22mm; min-height: 297mm; display: flex;">
+              <!-- Sidebar Kiri -->
+              <div style="width: 34%; background-color: ${accent}; color: #ffffff; padding: 20mm 14mm 20mm 16mm; box-sizing: border-box;">
+                ${showPhoto ? `<div style="display: flex; justify-content: center; margin-bottom: 18px;">${getPhotoMarkup('108px', '108px', '999px', 'rgba(255,255,255,0.75)', 'rgba(255,255,255,0.12)', '#ffffff')}</div>` : ''}
+
+                <div style="margin-bottom: 18px;">
+                  <div style="font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px; margin-bottom: 8px;">Kontak & Info</div>
+                  <div style="font-size: 8.8pt; line-height: 1.55; color: rgba(255,255,255,0.92);">
+                    <div style="margin-bottom: 6px;"><strong>TTL:</strong><br>${escapeHtml(ttl)}</div>
+                    <div style="margin-bottom: 6px;"><strong>Telepon / WA:</strong><br>${escapeHtml(telp)}</div>
+                    <div style="margin-bottom: 6px;"><strong>Email:</strong><br>${escapeHtml(email)}</div>
+                    ${linkedin ? `<div style="margin-bottom: 6px;"><strong>Portofolio:</strong><br>${escapeHtml(linkedin)}</div>` : ''}
+                    <div><strong>Alamat:</strong><br>${escapeHtml(alamat)}</div>
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 18px;">
+                  <div style="font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px; margin-bottom: 8px;">Keahlian Utama</div>
+                  <div>${skillTags}</div>
+                </div>
+
+                ${bahasa ? `
+                  <div>
+                    <div style="font-size: 10pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 4px; margin-bottom: 8px;">Bahasa</div>
+                    <div style="font-size: 9pt; color: rgba(255,255,255,0.92);">${escapeHtml(bahasa)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Kolom Kanan Utama -->
+              <div style="width: 66%; background-color: #ffffff; padding: 20mm 18mm 20mm 16mm; box-sizing: border-box;">
+                <div style="border-bottom: 2px solid ${accent}; padding-bottom: 12px; margin-bottom: 16px;">
+                  <h1 style="font-size: 20pt; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; line-height: 1.15;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11.5pt; font-weight: 600; color: ${accent};">${escapeHtml(posisi)}</div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <h2 style="font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; margin-bottom: 6px;">Profil Profesional</h2>
+                  <p style="margin: 0; text-align: justify; color: #334155; font-size: 9.8pt;">${nl2br(ringkasan)}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <h2 style="font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; margin-bottom: 8px;">Pengalaman Kerja</h2>
+                  <div style="border-left: 2px solid ${accent}; padding-left: 10px; margin-bottom: 12px;">
+                    <div style="font-weight: 700; font-size: 10.2pt; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 9pt; font-weight: 600; color: ${accent}; margin-bottom: 4px;">${escapeHtml(exp1Per)}</div>
+                    <div style="color: #334155; font-size: 9.5pt;">${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div style="border-left: 2px solid #cbd5e1; padding-left: 10px;">
+                      <div style="font-weight: 700; font-size: 10.2pt; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 9pt; font-weight: 600; color: #475569; margin-bottom: 4px;">${escapeHtml(exp2Per)}</div>
+                      <div style="color: #334155; font-size: 9.5pt;">${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <h2 style="font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; margin-bottom: 6px;">Pendidikan</h2>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 10pt;">${escapeHtml(eduKampus)}</div>
+                  <div style="font-size: 9pt; color: #64748b; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                  ${eduSma ? `<div style="margin-top: 5px; color: #334155; font-size: 9.5pt;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+
+                ${sertif ? `
+                  <div>
+                    <h2 style="font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: ${accent}; margin-bottom: 6px;">Sertifikasi & Pelatihan</h2>
+                    <div style="color: #334155; font-size: 9.5pt;">${nl2br(sertif)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 3: ATS FRIENDLY (MINIMALIS STANDAR HRD MODERN) ---
+        if (currentCvTemplate === 'ats') {
+          printArea.innerHTML = `
+            <div class="cv-ats-layout">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 10px; margin-bottom: 12px;">
+                <div style="${showPhoto ? 'text-align: left;' : 'text-align: center; width: 100%;'}">
+                  <h1 style="font-size: 18pt; font-weight: bold; text-transform: uppercase; margin: 0 0 3px 0; letter-spacing: 0.5px;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11pt; font-weight: bold; margin-bottom: 4px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 9.5pt;">
+                    ${escapeHtml(alamat)} | Telp: ${escapeHtml(telp)} | Email: ${escapeHtml(email)}
+                    ${linkedin ? ` | ${escapeHtml(linkedin)}` : ''}
+                  </div>
+                </div>
+                ${showPhoto ? `<div style="margin-left: 14px;">${getPhotoMarkup('82px', '102px', '0px', '#000000')}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-bottom: 5px; font-size: 10.5pt;">RINGKASAN PROFESIONAL</div>
+                <p style="margin: 0; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-bottom: 6px; font-size: 10.5pt;">PENGALAMAN KERJA</div>
+                <div style="margin-bottom: 8px;">
+                  <div style="font-weight: bold;">${escapeHtml(exp1Jab)} — ${escapeHtml(exp1Per)}</div>
+                  <div style="margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: bold;">${escapeHtml(exp2Jab)} — ${escapeHtml(exp2Per)}</div>
+                    <div style="margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-bottom: 6px; font-size: 10.5pt;">PENDIDIKAN</div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span><strong>${escapeHtml(eduKampus)}</strong></span>
+                  <span>${escapeHtml(eduTahun)}</span>
+                </div>
+                ${eduSma ? `<div style="margin-top: 3px;">${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 12px;">
+                <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-bottom: 5px; font-size: 10.5pt;">KEAHLIAN & INFORMASI TAMBAHAN</div>
+                <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                <div><strong>Tempat, Tanggal Lahir:</strong> ${escapeHtml(ttl)}</div>
+              </div>
+
+              ${sertif ? `
+                <div>
+                  <div style="font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #000000; padding-bottom: 2px; margin-bottom: 5px; font-size: 10.5pt;">SERTIFIKASI & PELATIHAN</div>
+                  <div>${nl2br(sertif)}</div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 4: KREATIF / DESAIN & STUDIO (BANNER HEADER GELAP + GRID MODERN) ---
+        if (currentCvTemplate === 'kreatif') {
+          const skillChips = skills.split(',').map(s => s.trim()).filter(Boolean).map(s =>
+            `<span style="display: inline-block; background: ${softBg}; color: ${accent}; border: 1px solid ${accent}; font-weight: 600; font-size: 8.8pt; padding: 3px 9px; border-radius: 999px; margin: 0 4px 5px 0;">${escapeHtml(s)}</span>`
+          ).join('');
+
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <!-- Banner Gelap Penuh di Atas -->
+              <div style="margin: -20mm -22mm 18px -22mm; background: linear-gradient(135deg, #0f172a, ${accent}); color: #ffffff; padding: 18mm 22mm 14mm 22mm; display: flex; justify-content: space-between; align-items: center; gap: 18px;">
+                <div style="flex: 1;">
+                  <div style="font-size: 9pt; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(255,255,255,0.75); margin-bottom: 4px;">CURRICULUM VITAE</div>
+                  <h1 style="font-size: 21pt; font-weight: 800; margin: 0 0 4px 0; line-height: 1.15; color: #ffffff;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11.5pt; font-weight: 600; color: #fde68a; margin-bottom: 10px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 9pt; color: rgba(255,255,255,0.9); line-height: 1.5;">
+                    <span>${escapeHtml(telp)}</span> &nbsp;•&nbsp; <span>${escapeHtml(email)}</span>
+                    ${linkedin ? ` &nbsp;•&nbsp; <span>${escapeHtml(linkedin)}</span>` : ''}<br>
+                    <span>${escapeHtml(ttl)}</span> &nbsp;•&nbsp; <span>${escapeHtml(alamat)}</span>
+                  </div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('96px', '96px', '14px', '#fde68a', 'rgba(255,255,255,0.15)', '#ffffff')}</div>` : ''}
+              </div>
+
+              <!-- Ringkasan dalam Kartu -->
+              <div style="background: #f8fafc; border-left: 4px solid ${accent}; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 16px;">
+                <div style="font-size: 9pt; font-weight: 700; text-transform: uppercase; color: ${accent}; margin-bottom: 3px;">Tentang Saya</div>
+                <p style="margin: 0; color: #334155; font-size: 9.8pt; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <!-- Grid 2 Kolom Bawah -->
+              <div style="display: flex; gap: 18px; align-items: flex-start;">
+                <div style="width: 60%;">
+                  <h2 style="font-size: 10.5pt; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid ${accent}; padding-bottom: 4px; margin-bottom: 10px;">Pengalaman Kerja</h2>
+                  <div style="margin-bottom: 12px;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 9pt; font-weight: 600; color: ${accent}; margin-bottom: 4px;">${escapeHtml(exp1Per)}</div>
+                    <div style="font-size: 9.5pt; color: #334155;">${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div>
+                      <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 9pt; font-weight: 600; color: #64748b; margin-bottom: 4px;">${escapeHtml(exp2Per)}</div>
+                      <div style="font-size: 9.5pt; color: #334155;">${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div style="width: 40%;">
+                  <h2 style="font-size: 10.5pt; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid ${accent}; padding-bottom: 4px; margin-bottom: 10px;">Pendidikan</h2>
+                  <div style="margin-bottom: 14px; font-size: 9.5pt;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(eduKampus)}</div>
+                    <div style="color: ${accent}; font-weight: 600; font-size: 8.8pt;">${escapeHtml(eduTahun)}</div>
+                    ${eduSma ? `<div style="margin-top: 5px; color: #475569;">${escapeHtml(eduSma)}</div>` : ''}
+                  </div>
+
+                  <h2 style="font-size: 10.5pt; font-weight: 800; text-transform: uppercase; color: #0f172a; border-bottom: 2px solid ${accent}; padding-bottom: 4px; margin-bottom: 8px;">Keahlian</h2>
+                  <div style="margin-bottom: 12px;">${skillChips}</div>
+
+                  ${bahasa ? `
+                    <div style="margin-bottom: 12px; font-size: 9.3pt;">
+                      <strong style="color: #0f172a;">Bahasa:</strong><br><span style="color: #334155;">${escapeHtml(bahasa)}</span>
+                    </div>
+                  ` : ''}
+
+                  ${sertif ? `
+                    <div style="font-size: 9.2pt;">
+                      <strong style="color: #0f172a;">Sertifikasi:</strong>
+                      <div style="color: #334155; margin-top: 2px;">${nl2br(sertif)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 5: FRESH GRADUATE / EKSEKUTIF RINGKAS (TWO-TONE TOP ACCENT) ---
+        if (currentCvTemplate === 'eksekutif') {
+          printArea.innerHTML = `
+            <div class="cv-layout" style="border-top: 8px solid ${accent}; border-bottom: 6px solid ${accent}; padding-top: 14px; padding-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; background: ${softBg}; padding: 14px 16px; border-radius: 10px; margin-bottom: 16px;">
+                <div style="flex: 1;">
+                  <h1 style="font-size: 19.5pt; font-weight: 800; color: #0f172a; margin: 0 0 2px 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11pt; font-weight: 700; color: ${accent}; margin-bottom: 8px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 9.2pt; color: #334155; line-height: 1.5;">
+                    <strong>TTL:</strong> ${escapeHtml(ttl)} &nbsp;|&nbsp; <strong>HP:</strong> ${escapeHtml(telp)} &nbsp;|&nbsp; <strong>Email:</strong> ${escapeHtml(email)}<br>
+                    <strong>Alamat:</strong> ${escapeHtml(alamat)}${linkedin ? ` &nbsp;|&nbsp; <strong>Profil:</strong> ${escapeHtml(linkedin)}` : ''}
+                  </div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('88px', '108px', '8px', accent)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="display: inline-block; background: ${accent}; color: #fff; font-size: 9.2pt; font-weight: 700; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Ringkasan Diri</div>
+                <p style="margin: 0; color: #334155; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="display: inline-block; background: ${accent}; color: #fff; font-size: 9.2pt; font-weight: 700; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Pendidikan</div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+                  <span>${escapeHtml(eduKampus)}</span>
+                  <span style="color: ${accent};">${escapeHtml(eduTahun)}</span>
+                </div>
+                ${eduSma ? `<div style="color: #475569; font-size: 9.8pt; margin-top: 2px;">${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="display: inline-block; background: ${accent}; color: #fff; font-size: 9.2pt; font-weight: 700; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Pengalaman Kerja / Magang</div>
+                <div style="margin-bottom: 8px;">
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)} <span style="font-weight: 500; color: #475569;">(${escapeHtml(exp1Per)})</span></div>
+                  <div style="color: #334155; margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)} <span style="font-weight: 500; color: #475569;">(${escapeHtml(exp2Per)})</span></div>
+                    <div style="color: #334155; margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div>
+                <div style="display: inline-block; background: ${accent}; color: #fff; font-size: 9.2pt; font-weight: 700; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Keahlian, Bahasa & Sertifikasi</div>
+                <div style="color: #334155;">
+                  <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                  ${sertif ? `<div style="margin-top: 3px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 6: SIDEBAR KANAN MODERN ---
+        if (currentCvTemplate === 'sidebar_kanan') {
+          const skillItems = skills.split(',').map(s => s.trim()).filter(Boolean).map(s =>
+            `<div style="padding: 4px 0; border-bottom: 1px dashed #cbd5e1; font-size: 9pt; color: #1e293b;">▸ ${escapeHtml(s)}</div>`
+          ).join('');
+
+          printArea.innerHTML = `
+            <div class="cv-layout" style="margin: -20mm -22mm; min-height: 297mm; display: flex;">
+              <div style="width: 65%; padding: 20mm 16mm 20mm 20mm; box-sizing: border-box;">
+                <div style="margin-bottom: 16px;">
+                  <div style="font-size: 9pt; font-weight: 700; color: ${accent}; text-transform: uppercase; letter-spacing: 0.1em;">Curriculum Vitae</div>
+                  <h1 style="font-size: 21pt; font-weight: 800; color: #0f172a; margin: 2px 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11pt; font-weight: 600; color: #475569;">${escapeHtml(posisi)}</div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <h2 style="font-size: 10.5pt; font-weight: 700; color: ${accent}; border-bottom: 2px solid ${accent}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase;">Ringkasan Profesional</h2>
+                  <p style="margin: 0; font-size: 9.8pt; color: #334155; text-align: justify;">${nl2br(ringkasan)}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <h2 style="font-size: 10.5pt; font-weight: 700; color: ${accent}; border-bottom: 2px solid ${accent}; padding-bottom: 3px; margin-bottom: 8px; text-transform: uppercase;">Pengalaman Kerja</h2>
+                  <div style="margin-bottom: 10px;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 9pt; font-weight: 600; color: ${accent}; margin-bottom: 3px;">${escapeHtml(exp1Per)}</div>
+                    <div style="font-size: 9.5pt; color: #334155;">${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div>
+                      <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 9pt; font-weight: 600; color: #64748b; margin-bottom: 3px;">${escapeHtml(exp2Per)}</div>
+                      <div style="font-size: 9.5pt; color: #334155;">${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div>
+                  <h2 style="font-size: 10.5pt; font-weight: 700; color: ${accent}; border-bottom: 2px solid ${accent}; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase;">Riwayat Pendidikan</h2>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 10pt;">${escapeHtml(eduKampus)}</div>
+                  <div style="font-size: 9pt; color: ${accent}; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                  ${eduSma ? `<div style="font-size: 9.5pt; color: #475569; margin-top: 4px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+              </div>
+
+              <div style="width: 35%; background: ${softBg}; border-left: 3px solid ${accent}; padding: 20mm 14mm; box-sizing: border-box;">
+                ${showPhoto ? `<div style="display: flex; justify-content: center; margin-bottom: 16px;">${getPhotoMarkup('104px', '124px', '12px', accent)}</div>` : ''}
+
+                <div style="margin-bottom: 16px;">
+                  <div style="font-weight: 700; font-size: 10pt; color: ${accent}; text-transform: uppercase; margin-bottom: 6px;">Data & Kontak</div>
+                  <div style="font-size: 8.8pt; color: #334155; line-height: 1.55;">
+                    <div style="margin-bottom: 5px;"><strong>TTL:</strong><br>${escapeHtml(ttl)}</div>
+                    <div style="margin-bottom: 5px;"><strong>Telepon:</strong><br>${escapeHtml(telp)}</div>
+                    <div style="margin-bottom: 5px;"><strong>Email:</strong><br>${escapeHtml(email)}</div>
+                    ${linkedin ? `<div style="margin-bottom: 5px;"><strong>Profil:</strong><br>${escapeHtml(linkedin)}</div>` : ''}
+                    <div><strong>Alamat:</strong><br>${escapeHtml(alamat)}</div>
+                  </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                  <div style="font-weight: 700; font-size: 10pt; color: ${accent}; text-transform: uppercase; margin-bottom: 6px;">Keahlian</div>
+                  <div>${skillItems}</div>
+                </div>
+
+                ${bahasa ? `
+                  <div style="margin-bottom: 14px;">
+                    <div style="font-weight: 700; font-size: 10pt; color: ${accent}; text-transform: uppercase; margin-bottom: 4px;">Bahasa</div>
+                    <div style="font-size: 9pt; color: #334155;">${escapeHtml(bahasa)}</div>
+                  </div>
+                ` : ''}
+
+                ${sertif ? `
+                  <div>
+                    <div style="font-weight: 700; font-size: 10pt; color: ${accent}; text-transform: uppercase; margin-bottom: 4px;">Sertifikasi</div>
+                    <div style="font-size: 8.8pt; color: #334155;">${nl2br(sertif)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 7: HARVARD AKADEMIK & INTERNASIONAL ---
+        if (currentCvTemplate === 'harvard') {
+          printArea.innerHTML = `
+            <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 10.5pt; line-height: 1.45; color: #111827;">
+              <div style="text-align: center; border-bottom: 1.5px solid #111827; padding-bottom: 8px; margin-bottom: 12px;">
+                <h1 style="font-size: 18pt; font-weight: bold; margin: 0 0 2px 0; letter-spacing: 0.4px;">${escapeHtml(nama)}</h1>
+                <div style="font-style: italic; font-size: 10.5pt; margin-bottom: 4px;">${escapeHtml(posisi)}</div>
+                <div style="font-size: 9.2pt;">${escapeHtml(alamat)} • ${escapeHtml(telp)} • ${escapeHtml(email)}${linkedin ? ` • ${escapeHtml(linkedin)}` : ''}</div>
+              </div>
+
+              <div style="margin-bottom: 11px;">
+                <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt; border-bottom: 1px solid #374151; margin-bottom: 4px;">Profil Profesional</div>
+                <p style="margin: 0; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 11px;">
+                <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt; border-bottom: 1px solid #374151; margin-bottom: 5px;">Pendidikan</div>
+                <div style="display: flex; justify-content: space-between;">
+                  <strong>${escapeHtml(eduKampus)}</strong>
+                  <span>${escapeHtml(eduTahun)}</span>
+                </div>
+                ${eduSma ? `<div>${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 11px;">
+                <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt; border-bottom: 1px solid #374151; margin-bottom: 5px;">Pengalaman Kerja</div>
+                <div style="margin-bottom: 8px;">
+                  <div style="font-weight: bold;">${escapeHtml(exp1Jab)} <span style="font-weight: normal; font-style: italic;">(${escapeHtml(exp1Per)})</span></div>
+                  <div style="margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: bold;">${escapeHtml(exp2Jab)} <span style="font-weight: normal; font-style: italic;">(${escapeHtml(exp2Per)})</span></div>
+                    <div style="margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div>
+                <div style="font-weight: bold; text-transform: uppercase; font-size: 10pt; border-bottom: 1px solid #374151; margin-bottom: 5px;">Keahlian, Bahasa & Sertifikasi</div>
+                <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                <div><strong>Tempat, Tanggal Lahir:</strong> ${escapeHtml(ttl)}</div>
+                ${sertif ? `<div style="margin-top: 3px;"><strong>Sertifikasi:</strong> ${nl2br(sertif)}</div>` : ''}
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 8: TIMELINE MODERN (GARIS WAKTU VERTIKAL) ---
+        if (currentCvTemplate === 'timeline') {
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0;">
+                ${showPhoto ? `<div>${getPhotoMarkup('90px', '90px', '999px', accent)}</div>` : ''}
+                <div style="flex: 1;">
+                  <h1 style="font-size: 20pt; font-weight: 800; color: #0f172a; margin: 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11pt; font-weight: 600; color: ${accent}; margin-bottom: 6px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 9pt; color: #475569;">
+                    ${escapeHtml(telp)} &nbsp;•&nbsp; ${escapeHtml(email)} &nbsp;•&nbsp; ${escapeHtml(ttl)}<br>
+                    ${escapeHtml(alamat)}${linkedin ? ` &nbsp;•&nbsp; ${escapeHtml(linkedin)}` : ''}
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <p style="margin: 0; color: #334155; text-align: justify; background: ${softBg}; padding: 10px 14px; border-radius: 8px;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <h2 style="font-size: 11pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 10px;">Perjalanan Karier</h2>
+                <div style="border-left: 2.5px solid ${accent}; margin-left: 6px; padding-left: 16px; position: relative;">
+                  <div style="margin-bottom: 14px; position: relative;">
+                    <span style="position: absolute; left: -22px; top: 3px; width: 10px; height: 10px; border-radius: 999px; background: ${accent}; border: 2px solid #fff;"></span>
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 9pt; font-weight: 600; color: ${accent}; margin-bottom: 3px;">${escapeHtml(exp1Per)}</div>
+                    <div style="font-size: 9.5pt; color: #334155;">${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div style="position: relative;">
+                      <span style="position: absolute; left: -22px; top: 3px; width: 10px; height: 10px; border-radius: 999px; background: #94a3b8; border: 2px solid #fff;"></span>
+                      <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 9pt; font-weight: 600; color: #64748b; margin-bottom: 3px;">${escapeHtml(exp2Per)}</div>
+                      <div style="font-size: 9.5pt; color: #334155;">${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div style="margin-bottom: 16px;">
+                <h2 style="font-size: 11pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 10px;">Jejak Pendidikan</h2>
+                <div style="border-left: 2.5px solid ${accent}; margin-left: 6px; padding-left: 16px; position: relative;">
+                  <span style="position: absolute; left: -6px; top: 3px; width: 10px; height: 10px; border-radius: 999px; background: ${accent}; border: 2px solid #fff;"></span>
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(eduKampus)} <span style="font-weight: 600; color: ${accent}; font-size: 9pt;">(${escapeHtml(eduTahun)})</span></div>
+                  ${eduSma ? `<div style="font-size: 9.5pt; color: #475569; margin-top: 3px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+              </div>
+
+              <div>
+                <h2 style="font-size: 11pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 6px;">Kompetensi & Sertifikasi</h2>
+                <div style="font-size: 9.5pt; color: #334155;">
+                  <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                  ${sertif ? `<div style="margin-top: 4px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 9: MODULAR CARDS (KARTU TERPISAH MODERN) ---
+        if (currentCvTemplate === 'kartu_grid') {
+          printArea.innerHTML = `
+            <div class="cv-layout" style="margin: -20mm -22mm; min-height: 297mm; background: #f1f5f9; padding: 16mm 18mm; box-sizing: border-box;">
+              <div style="background: #ffffff; border-radius: 14px; padding: 16px 18px; border-left: 6px solid ${accent}; display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                <div>
+                  <h1 style="font-size: 19pt; font-weight: 800; color: #0f172a; margin: 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11pt; font-weight: 700; color: ${accent}; margin-bottom: 6px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 8.8pt; color: #475569;">${escapeHtml(telp)} • ${escapeHtml(email)} • ${escapeHtml(ttl)}<br>${escapeHtml(alamat)}</div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('82px', '96px', '10px', accent)}</div>` : ''}
+              </div>
+
+              <div style="background: #ffffff; border-radius: 14px; padding: 14px 18px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                <div style="font-size: 9.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 4px;">Ringkasan Profesional</div>
+                <p style="margin: 0; font-size: 9.5pt; color: #334155; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="background: #ffffff; border-radius: 14px; padding: 14px 18px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                <div style="font-size: 9.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 8px;">Pengalaman Kerja</div>
+                <div style="margin-bottom: 8px;">
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)} <span style="color: ${accent}; font-size: 9pt;">(${escapeHtml(exp1Per)})</span></div>
+                  <div style="font-size: 9.3pt; color: #334155;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div style="padding-top: 6px; border-top: 1px dashed #e2e8f0;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)} <span style="color: #64748b; font-size: 9pt;">(${escapeHtml(exp2Per)})</span></div>
+                    <div style="font-size: 9.3pt; color: #334155;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="display: flex; gap: 12px;">
+                <div style="width: 50%; background: #ffffff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                  <div style="font-size: 9.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 6px;">Pendidikan</div>
+                  <div style="font-weight: 700; font-size: 9.5pt; color: #0f172a;">${escapeHtml(eduKampus)}</div>
+                  <div style="font-size: 8.8pt; color: ${accent}; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                  ${eduSma ? `<div style="font-size: 9pt; color: #475569; margin-top: 4px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+                <div style="width: 50%; background: #ffffff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                  <div style="font-size: 9.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 6px;">Keahlian & Bahasa</div>
+                  <div style="font-size: 9pt; color: #334155; margin-bottom: 4px;">${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div style="font-size: 8.8pt; color: #475569;"><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 10: CENTER ELEGANT (SIMETRIS TENGAH) ---
+        if (currentCvTemplate === 'header_tengah') {
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <div style="text-align: center; border-bottom: 2px solid ${accent}; padding-bottom: 14px; margin-bottom: 16px;">
+                ${showPhoto ? `<div style="display: flex; justify-content: center; margin-bottom: 10px;">${getPhotoMarkup('94px', '94px', '999px', accent)}</div>` : ''}
+                <h1 style="font-size: 20pt; font-weight: 800; color: #0f172a; margin: 0 0 2px 0;">${escapeHtml(nama)}</h1>
+                <div style="font-size: 11pt; font-weight: 600; color: ${accent}; margin-bottom: 6px;">${escapeHtml(posisi)}</div>
+                <div style="font-size: 9pt; color: #475569;">
+                  ${escapeHtml(ttl)} &nbsp;|&nbsp; ${escapeHtml(telp)} &nbsp;|&nbsp; ${escapeHtml(email)}<br>
+                  ${escapeHtml(alamat)}${linkedin ? ` &nbsp;|&nbsp; ${escapeHtml(linkedin)}` : ''}
+                </div>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <h2 style="text-align: center; font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: ${accent}; margin-bottom: 6px;">— Profil Diri —</h2>
+                <p style="margin: 0; text-align: center; color: #334155; font-size: 9.8pt;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <h2 style="text-align: center; font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: ${accent}; margin-bottom: 8px;">— Pengalaman Kerja —</h2>
+                <div style="margin-bottom: 10px;">
+                  <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+                    <span>${escapeHtml(exp1Jab)}</span>
+                    <span style="color: ${accent}; font-size: 9.2pt;">${escapeHtml(exp1Per)}</span>
+                  </div>
+                  <div style="color: #334155; font-size: 9.5pt; margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+                      <span>${escapeHtml(exp2Jab)}</span>
+                      <span style="color: #64748b; font-size: 9.2pt;">${escapeHtml(exp2Per)}</span>
+                    </div>
+                    <div style="color: #334155; font-size: 9.5pt; margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <h2 style="text-align: center; font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: ${accent}; margin-bottom: 6px;">— Pendidikan —</h2>
+                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #0f172a;">
+                  <span>${escapeHtml(eduKampus)}</span>
+                  <span style="color: ${accent};">${escapeHtml(eduTahun)}</span>
+                </div>
+                ${eduSma ? `<div style="color: #475569; font-size: 9.5pt; margin-top: 2px;">${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div>
+                <h2 style="text-align: center; font-size: 10.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: ${accent}; margin-bottom: 6px;">— Keahlian & Sertifikasi —</h2>
+                <div style="color: #334155; font-size: 9.5pt;">
+                  <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                  ${sertif ? `<div style="margin-top: 3px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 11: SWISS EDITORIAL GRID (LABEL KIRI TEGAS) ---
+        if (currentCvTemplate === 'swiss_grid') {
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 4px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px;">
+                <div>
+                  <h1 style="font-size: 23pt; font-weight: 900; letter-spacing: -0.02em; color: #0f172a; margin: 0; line-height: 1.05;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11.5pt; font-weight: 700; color: ${accent}; margin-top: 4px;">${escapeHtml(posisi)}</div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('82px', '96px', '4px', '#0f172a')}</div>` : ''}
+              </div>
+
+              <div style="display: flex; border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="width: 28%; font-weight: 800; font-size: 9.5pt; text-transform: uppercase; color: ${accent};">Kontak</div>
+                <div style="width: 72%; font-size: 9.3pt; color: #334155; line-height: 1.5;">
+                  ${escapeHtml(telp)} • ${escapeHtml(email)}<br>${escapeHtml(ttl)} • ${escapeHtml(alamat)}${linkedin ? `<br>${escapeHtml(linkedin)}` : ''}
+                </div>
+              </div>
+
+              <div style="display: flex; border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="width: 28%; font-weight: 800; font-size: 9.5pt; text-transform: uppercase; color: ${accent};">Profil</div>
+                <div style="width: 72%; font-size: 9.6pt; color: #334155; text-align: justify;">${nl2br(ringkasan)}</div>
+              </div>
+
+              <div style="display: flex; border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="width: 28%; font-weight: 800; font-size: 9.5pt; text-transform: uppercase; color: ${accent};">Pengalaman</div>
+                <div style="width: 72%; font-size: 9.5pt; color: #334155;">
+                  <div style="margin-bottom: 10px;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 8.8pt; font-weight: 600; color: ${accent}; margin-bottom: 3px;">${escapeHtml(exp1Per)}</div>
+                    <div>${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div>
+                      <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 8.8pt; font-weight: 600; color: #64748b; margin-bottom: 3px;">${escapeHtml(exp2Per)}</div>
+                      <div>${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div style="display: flex; border-bottom: 1px solid #cbd5e1; padding-bottom: 12px; margin-bottom: 12px;">
+                <div style="width: 28%; font-weight: 800; font-size: 9.5pt; text-transform: uppercase; color: ${accent};">Pendidikan</div>
+                <div style="width: 72%; font-size: 9.5pt;">
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(eduKampus)}</div>
+                  <div style="color: ${accent}; font-size: 8.8pt; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                  ${eduSma ? `<div style="color: #475569; margin-top: 3px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+              </div>
+
+              <div style="display: flex;">
+                <div style="width: 28%; font-weight: 800; font-size: 9.5pt; text-transform: uppercase; color: ${accent};">Keahlian</div>
+                <div style="width: 72%; font-size: 9.4pt; color: #334155;">
+                  <div>${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div style="margin-top: 4px;"><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                  ${sertif ? `<div style="margin-top: 4px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 12: SPLIT HEADER (HEADER DUA BLOK WARNA) ---
+        if (currentCvTemplate === 'split_header') {
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <div style="margin: -20mm -22mm 16px -22mm; display: flex; min-height: 44mm;">
+                <div style="width: 64%; background: ${accent}; color: #ffffff; padding: 14mm 16mm 14mm 22mm; display: flex; flex-direction: column; justify-content: center;">
+                  <h1 style="font-size: 19.5pt; font-weight: 800; margin: 0 0 4px 0; line-height: 1.15;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11pt; font-weight: 600; color: rgba(255,255,255,0.88);">${escapeHtml(posisi)}</div>
+                </div>
+                <div style="width: 36%; background: #0f172a; color: #ffffff; padding: 12mm 16mm 12mm 14mm; display: flex; align-items: center; justify-content: center;">
+                  ${showPhoto ? getPhotoMarkup('86px', '104px', '8px', '#ffffff', 'rgba(255,255,255,0.1)', '#ffffff') : `<div style="font-size: 8.5pt; line-height: 1.5; color: #e2e8f0;">${escapeHtml(telp)}<br>${escapeHtml(email)}</div>`}
+                </div>
+              </div>
+
+              <div style="background: ${softBg}; padding: 8px 12px; border-radius: 8px; font-size: 8.8pt; color: #1e293b; margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 12px;">
+                <span><strong>TTL:</strong> ${escapeHtml(ttl)}</span>
+                <span><strong>HP:</strong> ${escapeHtml(telp)}</span>
+                <span><strong>Email:</strong> ${escapeHtml(email)}</span>
+                <span><strong>Alamat:</strong> ${escapeHtml(alamat)}</span>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 4px;">Ringkasan Profesional</h2>
+                <p style="margin: 0; font-size: 9.6pt; color: #334155; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 6px;">Pengalaman Kerja</h2>
+                <div style="margin-bottom: 8px;">
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)} <span style="font-weight: 600; color: ${accent};">• ${escapeHtml(exp1Per)}</span></div>
+                  <div style="font-size: 9.4pt; color: #334155;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)} <span style="font-weight: 600; color: #64748b;">• ${escapeHtml(exp2Per)}</span></div>
+                    <div style="font-size: 9.4pt; color: #334155;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="display: flex; gap: 16px;">
+                <div style="width: 50%;">
+                  <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 5px;">Pendidikan</h2>
+                  <div style="font-weight: 700; font-size: 9.5pt;">${escapeHtml(eduKampus)}</div>
+                  <div style="font-size: 8.8pt; color: ${accent}; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                  ${eduSma ? `<div style="font-size: 9pt; color: #475569; margin-top: 3px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+                <div style="width: 50%;">
+                  <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 5px;">Keahlian & Bahasa</h2>
+                  <div style="font-size: 9.2pt; color: #334155;">${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div style="font-size: 9pt; color: #475569; margin-top: 4px;"><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 13: INFOGRAFIS SKILL & BADGE ---
+        if (currentCvTemplate === 'infografis') {
+          const skillBars = skills.split(',').map(s => s.trim()).filter(Boolean).map((s, idx) => {
+            const pct = Math.max(75, 95 - (idx * 4));
+            return `
+              <div style="margin-bottom: 6px;">
+                <div style="display: flex; justify-content: space-between; font-size: 8.8pt; font-weight: 600; color: #1e293b; margin-bottom: 2px;">
+                  <span>${escapeHtml(s)}</span><span style="color: ${accent};">${pct}%</span>
+                </div>
+                <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
+                  <div style="width: ${pct}%; height: 100%; background: ${accent}; border-radius: 999px;"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          printArea.innerHTML = `
+            <div class="cv-layout">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; background: ${softBg}; border: 1.5px solid ${accent}; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
+                <div style="flex: 1;">
+                  <span style="display: inline-block; background: ${accent}; color: #fff; font-size: 8pt; font-weight: 700; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; margin-bottom: 4px;">Profil Kandidat</span>
+                  <h1 style="font-size: 19pt; font-weight: 800; color: #0f172a; margin: 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 10.8pt; font-weight: 700; color: ${accent}; margin-bottom: 6px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 8.8pt; color: #334155;">📞 ${escapeHtml(telp)} &nbsp;|&nbsp; ✉️ ${escapeHtml(email)} &nbsp;|&nbsp; 📍 ${escapeHtml(alamat)}</div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('86px', '86px', '999px', accent)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 4px;">Ringkasan Profesional</h2>
+                <p style="margin: 0; font-size: 9.5pt; color: #334155; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="display: flex; gap: 18px; align-items: flex-start;">
+                <div style="width: 58%;">
+                  <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; border-bottom: 2px solid ${accent}; padding-bottom: 3px; margin-bottom: 8px;">Pengalaman Kerja</h2>
+                  <div style="margin-bottom: 10px;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 8.8pt; font-weight: 600; color: ${accent}; margin-bottom: 3px;">${escapeHtml(exp1Per)}</div>
+                    <div style="font-size: 9.3pt; color: #334155;">${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div style="margin-bottom: 12px;">
+                      <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 8.8pt; font-weight: 600; color: #64748b; margin-bottom: 3px;">${escapeHtml(exp2Per)}</div>
+                      <div style="font-size: 9.3pt; color: #334155;">${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+
+                  <h2 style="font-size: 10.5pt; font-weight: 800; color: ${accent}; text-transform: uppercase; border-bottom: 2px solid ${accent}; padding-bottom: 3px; margin-bottom: 6px;">Pendidikan</h2>
+                  <div style="font-weight: 700; font-size: 9.6pt;">${escapeHtml(eduKampus)}</div>
+                  <div style="font-size: 8.8pt; color: ${accent}; font-weight: 600;">${escapeHtml(eduTahun)}</div>
+                  ${eduSma ? `<div style="font-size: 9pt; color: #475569; margin-top: 2px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+
+                <div style="width: 42%; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                  <h2 style="font-size: 10pt; font-weight: 800; color: ${accent}; text-transform: uppercase; margin-bottom: 8px;">Tingkat Keahlian</h2>
+                  ${skillBars}
+                  <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid #cbd5e1; font-size: 8.8pt; color: #334155;">
+                    <div><strong>TTL:</strong> ${escapeHtml(ttl)}</div>
+                    ${bahasa ? `<div style="margin-top: 3px;"><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                    ${sertif ? `<div style="margin-top: 4px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 14: NOIR MONOKROM (HITAM PUTIH BOLD) ---
+        if (currentCvTemplate === 'monokrom') {
+          printArea.innerHTML = `
+            <div class="cv-layout" style="color: #000000;">
+              <div style="background: #000000; color: #ffffff; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 16px;">
+                <div>
+                  <h1 style="font-size: 20pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 3px 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 10.5pt; font-weight: 600; color: #d1d5db; margin-bottom: 6px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 8.8pt; color: #e5e7eb;">${escapeHtml(telp)} • ${escapeHtml(email)} • ${escapeHtml(ttl)}<br>${escapeHtml(alamat)}</div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('84px', '102px', '0px', '#ffffff', '#1f2937', '#ffffff')}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="background: #f3f4f6; border-left: 4px solid #000000; padding: 4px 10px; font-weight: 800; font-size: 10pt; text-transform: uppercase; margin-bottom: 6px;">Ringkasan Profesional</div>
+                <p style="margin: 0; font-size: 9.6pt; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="background: #f3f4f6; border-left: 4px solid #000000; padding: 4px 10px; font-weight: 800; font-size: 10pt; text-transform: uppercase; margin-bottom: 8px;">Pengalaman Kerja</div>
+                <div style="margin-bottom: 10px;">
+                  <div style="font-weight: 700;">${escapeHtml(exp1Jab)} — <span style="font-weight: 600;">${escapeHtml(exp1Per)}</span></div>
+                  <div style="font-size: 9.4pt; margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: 700;">${escapeHtml(exp2Jab)} — <span style="font-weight: 600;">${escapeHtml(exp2Per)}</span></div>
+                    <div style="font-size: 9.4pt; margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <div style="background: #f3f4f6; border-left: 4px solid #000000; padding: 4px 10px; font-weight: 800; font-size: 10pt; text-transform: uppercase; margin-bottom: 6px;">Riwayat Pendidikan</div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                  <span>${escapeHtml(eduKampus)}</span><span>${escapeHtml(eduTahun)}</span>
+                </div>
+                ${eduSma ? `<div style="font-size: 9.4pt; margin-top: 2px;">${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div>
+                <div style="background: #f3f4f6; border-left: 4px solid #000000; padding: 4px 10px; font-weight: 800; font-size: 10pt; text-transform: uppercase; margin-bottom: 6px;">Keahlian & Sertifikasi</div>
+                <div style="font-size: 9.4pt;">
+                  <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                  ${sertif ? `<div style="margin-top: 3px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 15: EXECUTIVE SERIF (ELEGAN BINGKAI GANDA) ---
+        if (currentCvTemplate === 'eksekutif_gelap') {
+          printArea.innerHTML = `
+            <div style="font-family: Georgia, 'Times New Roman', serif; border: 1.5px solid ${accent}; padding: 14mm 16mm; min-height: 257mm; box-sizing: border-box; color: #1e293b;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px double ${accent}; padding-bottom: 12px; margin-bottom: 14px;">
+                <div>
+                  <h1 style="font-size: 20pt; font-weight: bold; color: #0f172a; margin: 0;">${escapeHtml(nama)}</h1>
+                  <div style="font-size: 11.5pt; font-style: italic; color: ${accent}; font-weight: bold; margin-bottom: 6px;">${escapeHtml(posisi)}</div>
+                  <div style="font-size: 9.2pt; color: #475569;">${escapeHtml(ttl)} • ${escapeHtml(telp)} • ${escapeHtml(email)}<br>${escapeHtml(alamat)}</div>
+                </div>
+                ${showPhoto ? `<div>${getPhotoMarkup('86px', '104px', '4px', accent)}</div>` : ''}
+              </div>
+
+              <div style="margin-bottom: 13px;">
+                <div style="font-weight: bold; font-size: 10.5pt; color: ${accent}; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">Ringkasan Eksekutif</div>
+                <p style="margin: 0; font-size: 9.8pt; text-align: justify;">${nl2br(ringkasan)}</p>
+              </div>
+
+              <div style="margin-bottom: 13px;">
+                <div style="font-weight: bold; font-size: 10.5pt; color: ${accent}; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">Pengalaman Profesional</div>
+                <div style="margin-bottom: 9px;">
+                  <div style="font-weight: bold; color: #0f172a;">${escapeHtml(exp1Jab)} <span style="font-weight: normal; color: #475569;">| ${escapeHtml(exp1Per)}</span></div>
+                  <div style="font-size: 9.5pt; margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                </div>
+                ${exp2Jab ? `
+                  <div>
+                    <div style="font-weight: bold; color: #0f172a;">${escapeHtml(exp2Jab)} <span style="font-weight: normal; color: #475569;">| ${escapeHtml(exp2Per)}</span></div>
+                    <div style="font-size: 9.5pt; margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                  </div>
+                ` : ''}
+              </div>
+
+              <div style="margin-bottom: 13px;">
+                <div style="font-weight: bold; font-size: 10.5pt; color: ${accent}; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;">Pendidikan</div>
+                <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                  <span>${escapeHtml(eduKampus)}</span><span style="color: ${accent};">${escapeHtml(eduTahun)}</span>
+                </div>
+                ${eduSma ? `<div style="font-size: 9.5pt; margin-top: 2px;">${escapeHtml(eduSma)}</div>` : ''}
+              </div>
+
+              <div>
+                <div style="font-weight: bold; font-size: 10.5pt; color: ${accent}; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;">Kompetensi & Sertifikasi</div>
+                <div style="font-size: 9.5pt;">
+                  <div><strong>Keahlian:</strong> ${escapeHtml(skills)}</div>
+                  ${bahasa ? `<div><strong>Bahasa:</strong> ${escapeHtml(bahasa)}</div>` : ''}
+                  ${sertif ? `<div style="margin-top: 3px;"><strong>Sertifikasi:</strong><br>${nl2br(sertif)}</div>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        // --- MODEL 16: COMPACT 1-PAGE (PADAT & EFISIEN) ---
+        printArea.innerHTML = `
+          <div class="cv-layout" style="font-size: 9.5pt; line-height: 1.4;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: ${accent}; color: #ffffff; padding: 12px 16px; border-radius: 10px; margin-bottom: 12px;">
+              <div>
+                <h1 style="font-size: 17.5pt; font-weight: 800; margin: 0;">${escapeHtml(nama)}</h1>
+                <div style="font-size: 10.5pt; font-weight: 600; color: rgba(255,255,255,0.9);">${escapeHtml(posisi)}</div>
+              </div>
+              <div style="text-align: right; font-size: 8.5pt; line-height: 1.45;">
+                <div>${escapeHtml(telp)} • ${escapeHtml(email)}</div>
+                <div>${escapeHtml(ttl)}</div>
+                <div>${escapeHtml(alamat)}</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 14px; align-items: flex-start;">
+              <div style="width: 64%;">
+                <div style="margin-bottom: 10px;">
+                  <div style="font-weight: 800; color: ${accent}; text-transform: uppercase; font-size: 9.5pt; border-bottom: 1.5px solid ${accent}; margin-bottom: 4px;">Ringkasan Profil</div>
+                  <p style="margin: 0; text-align: justify; color: #334155;">${nl2br(ringkasan)}</p>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                  <div style="font-weight: 800; color: ${accent}; text-transform: uppercase; font-size: 9.5pt; border-bottom: 1.5px solid ${accent}; margin-bottom: 6px;">Pengalaman Kerja</div>
+                  <div style="margin-bottom: 8px;">
+                    <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp1Jab)}</div>
+                    <div style="font-size: 8.5pt; font-weight: 600; color: ${accent};">${escapeHtml(exp1Per)}</div>
+                    <div style="color: #334155; margin-top: 2px;">${nl2br(exp1Desk)}</div>
+                  </div>
+                  ${exp2Jab ? `
+                    <div>
+                      <div style="font-weight: 700; color: #0f172a;">${escapeHtml(exp2Jab)}</div>
+                      <div style="font-size: 8.5pt; font-weight: 600; color: #64748b;">${escapeHtml(exp2Per)}</div>
+                      <div style="color: #334155; margin-top: 2px;">${nl2br(exp2Desk)}</div>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <div>
+                  <div style="font-weight: 800; color: ${accent}; text-transform: uppercase; font-size: 9.5pt; border-bottom: 1.5px solid ${accent}; margin-bottom: 5px;">Pendidikan</div>
+                  <div style="font-weight: 700; color: #0f172a;">${escapeHtml(eduKampus)} <span style="color: ${accent}; font-weight: 600;">(${escapeHtml(eduTahun)})</span></div>
+                  ${eduSma ? `<div style="color: #475569; margin-top: 2px;">${escapeHtml(eduSma)}</div>` : ''}
+                </div>
+              </div>
+
+              <div style="width: 36%; background: ${softBg}; padding: 10px 12px; border-radius: 10px;">
+                ${showPhoto ? `<div style="display: flex; justify-content: center; margin-bottom: 10px;">${getPhotoMarkup('86px', '104px', '8px', accent)}</div>` : ''}
+                <div style="margin-bottom: 10px;">
+                  <div style="font-weight: 800; color: ${accent}; text-transform: uppercase; font-size: 9pt; margin-bottom: 4px;">Keahlian</div>
+                  <div style="font-size: 8.8pt; color: #1e293b;">${nl2br(skills)}</div>
+                </div>
+                ${bahasa ? `
+                  <div style="margin-bottom: 10px;">
+                    <div style="font-weight: 800; color: ${accent}; text-transform: uppercase; font-size: 9pt; margin-bottom: 3px;">Bahasa</div>
+                    <div style="font-size: 8.8pt; color: #1e293b;">${escapeHtml(bahasa)}</div>
+                  </div>
+                ` : ''}
+                ${sertif ? `
+                  <div>
+                    <div style="font-weight: 800; color: ${accent}; text-transform: uppercase; font-size: 9pt; margin-bottom: 3px;">Sertifikasi</div>
+                    <div style="font-size: 8.6pt; color: #1e293b;">${nl2br(sertif)}</div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // B. RENDER SURAT KUASA UMUM
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_kuasa') {
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            <div class="judul-surat">SURAT KUASA</div>
+            ${nomorSurat ? `<div class="nomor-surat">Nomor: ${nomorSurat}</div>` : '<div style="margin-bottom:16px;"></div>'}
+
+            <p>Saya yang bertanda tangan di bawah ini:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('sk_p1_nama')}</strong></td></tr>
+              <tr><td class="label-col">Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('sk_p1_nik')}</td></tr>
+              <tr><td class="label-col">Tempat, Tanggal Lahir</td><td class="sep-col">:</td><td>${val('sk_p1_ttl')}</td></tr>
+              <tr><td class="label-col">Pekerjaan</td><td class="sep-col">:</td><td>${val('sk_p1_pekerjaan')}</td></tr>
+              <tr><td class="label-col">Alamat</td><td class="sep-col">:</td><td>${val('sk_p1_alamat')}</td></tr>
+            </table>
+            <p>Selanjutnya disebut sebagai <strong>PIHAK PERTAMA (Pemberi Kuasa)</strong>.</p>
+
+            <p>Dengan ini memberikan kuasa penuh kepada:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('sk_p2_nama')}</strong></td></tr>
+              <tr><td class="label-col">Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('sk_p2_nik')}</td></tr>
+              <tr><td class="label-col">Tempat, Tanggal Lahir</td><td class="sep-col">:</td><td>${val('sk_p2_ttl')}</td></tr>
+              <tr><td class="label-col">Pekerjaan</td><td class="sep-col">:</td><td>${val('sk_p2_pekerjaan')}</td></tr>
+              <tr><td class="label-col">Alamat</td><td class="sep-col">:</td><td>${val('sk_p2_alamat')}</td></tr>
+            </table>
+            <p>Selanjutnya disebut sebagai <strong>PIHAK KEDUA (Penerima Kuasa)</strong>.</p>
+
+            <p style="text-align: center; font-weight: bold; letter-spacing: 2px; margin: 12px 0;">--- KHUSUS ---</p>
+            <p>${nl2br(rawVal('sk_keperluan', 'Untuk mengurus keperluan administrasi serta menandatangani surat-surat yang berkaitan dengan kepentingan Pemberi Kuasa.'))}</p>
+
+            <p>Demikian Surat Kuasa ini dibuat dengan sebenarnya dalam keadaan sadar dan tanpa paksaan dari pihak mana pun untuk dapat dipergunakan sebagaimana mestinya.</p>
+
+            <div style="text-align: right; margin-top: 20px; margin-bottom: 8px;">${kota}, ${tanggal}</div>
+            <table style="width: 100%; text-align: center; border-collapse: collapse;">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+                  <div>Penerima Kuasa,</div>
+                  <div style="height: 66px;"></div>
+                  <div><strong>( ${val('sk_p2_nama', '..............................')} )</strong></div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                  <div>Pemberi Kuasa,</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('sk_p1_nama', '..............................')} )</strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // C. RENDER SURAT PENGUNDURAN DIRI (RESIGN)
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_resign') {
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            <div class="judul-surat">SURAT PENGUNDURAN DIRI</div>
+            ${nomorSurat ? `<div class="nomor-surat">Nomor: ${nomorSurat}</div>` : '<div style="margin-bottom:14px;"></div>'}
+
+            ${renderRecipientHeader()}
+
+            <p>Dengan hormat,</p>
+            <p>Saya yang bertanda tangan di bawah ini:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('rs_nama')}</strong></td></tr>
+              ${rawVal('rs_nik_karyawan') ? `<tr><td class="label-col">NIK / ID Karyawan</td><td class="sep-col">:</td><td>${val('rs_nik_karyawan')}</td></tr>` : ''}
+              <tr><td class="label-col">Jabatan</td><td class="sep-col">:</td><td>${val('rs_jabatan')}</td></tr>
+              <tr><td class="label-col">Divisi / Departemen</td><td class="sep-col">:</td><td>${val('rs_divisi')}</td></tr>
+            </table>
+
+            <p>Melalui surat ini, saya bermaksud mengajukan permohonan pengunduran diri dari jabatan saya sebagai <strong>${val('rs_jabatan')}</strong> di <strong>${val('rs_perusahaan')}</strong>, terhitung efektif mulai tanggal <strong>${val('rs_tgl_efektif')}</strong>.</p>
+
+            <p>${nl2br(rawVal('rs_alasan', 'Keputusan ini saya ambil setelah mempertimbangkan rencana pengembangan karier serta kepentingan pribadi saya ke depan.'))}</p>
+
+            <p>${nl2br(rawVal('rs_ucapan', 'Saya mengucapkan terima kasih yang sebesar-besarnya atas kesempatan, bimbingan, serta kerja sama yang telah diberikan selama saya bekerja. Saya berkomitmen untuk menyelesaikan seluruh tanggung jawab dan proses serah terima tugas dengan baik sebelum tanggal efektif pengunduran diri.'))}</p>
+
+            <p>Demikian surat pengunduran diri ini saya sampaikan. Atas perhatian dan pengertian Bapak/Ibu, saya ucapkan terima kasih.</p>
+
+            <table style="width: 100%; margin-top: 28px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 55%;"></td>
+                <td style="width: 45%; text-align: center;">
+                  <div>Hormat saya,</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('rs_nama', '..............................')} )</strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // D. RENDER SURAT KUASA PENGAMBILAN BPKB / STNK
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_bpkb') {
+        const jenisDok = rawVal('bk_jenis_dok', 'BPKB (Buku Pemilik Kendaraan Bermotor)');
+        const noKontrak = rawVal('bk_no_kontrak', '');
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            <div class="judul-surat">SURAT KUASA PENGAMBILAN ${jenisDok.includes('STNK') && !jenisDok.includes('BPKB') ? 'STNK' : 'BPKB / STNK'}</div>
+            ${nomorSurat ? `<div class="nomor-surat">Nomor: ${nomorSurat}</div>` : '<div style="margin-bottom:12px;"></div>'}
+
+            ${renderRecipientHeader()}
+
+            <p>Saya yang bertanda tangan di bawah ini:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Pemilik</td><td class="sep-col">:</td><td><strong>${val('bk_p1_nama')}</strong></td></tr>
+              <tr><td class="label-col">Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('bk_p1_nik')}</td></tr>
+              <tr><td class="label-col">Alamat</td><td class="sep-col">:</td><td>${val('bk_p1_alamat')}</td></tr>
+            </table>
+
+            <p>Dengan ini memberikan kuasa penuh kepada:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Penerima Kuasa</td><td class="sep-col">:</td><td><strong>${val('bk_p2_nama')}</strong></td></tr>
+              <tr><td class="label-col">Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('bk_p2_nik')}</td></tr>
+              <tr><td class="label-col">Hubungan</td><td class="sep-col">:</td><td>${val('bk_p2_hubungan')}</td></tr>
+              <tr><td class="label-col">Alamat</td><td class="sep-col">:</td><td>${val('bk_p2_alamat')}</td></tr>
+            </table>
+
+            <p>Untuk melakukan pengambilan <strong>${escapeHtml(jenisDok)}</strong>${noKontrak ? ` dengan Nomor Kontrak <strong>${escapeHtml(noKontrak)}</strong>` : ''}, atas 1 (satu) unit kendaraan dengan identitas sebagai berikut:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Merk / Tipe Kendaraan</td><td class="sep-col">:</td><td>${val('bk_merk')}</td></tr>
+              <tr><td class="label-col">Tahun / Warna</td><td class="sep-col">:</td><td>${val('bk_tahun')}</td></tr>
+              <tr><td class="label-col">Nomor Polisi</td><td class="sep-col">:</td><td><strong>${val('bk_nopol')}</strong></td></tr>
+              <tr><td class="label-col">Nomor Rangka</td><td class="sep-col">:</td><td>${val('bk_norangka')}</td></tr>
+              <tr><td class="label-col">Nomor Mesin</td><td class="sep-col">:</td><td>${val('bk_nomesin')}</td></tr>
+              ${rawVal('bk_atas_nama') ? `<tr><td class="label-col">Atas Nama</td><td class="sep-col">:</td><td>${val('bk_atas_nama')}</td></tr>` : ''}
+            </table>
+
+            <p>Segala akibat yang timbul dari pemberian kuasa ini menjadi tanggung jawab penuh Pemberi Kuasa. Demikian surat kuasa ini dibuat untuk dipergunakan sebagaimana mestinya.</p>
+
+            <table style="width: 100%; text-align: center; margin-top: 18px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+                  <div>Penerima Kuasa,</div>
+                  <div style="height: 66px;"></div>
+                  <div><strong>( ${val('bk_p2_nama', '..............................')} )</strong></div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                  <div>Pemberi Kuasa,</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('bk_p1_nama', '..............................')} )</strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // E. RENDER SURAT PERNYATAAN
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_pernyataan') {
+        const kat = rawVal('sp_kategori', 'Surat Pernyataan');
+        const judulPernyataan = kat.includes('Custom') ? 'SURAT PERNYATAAN' : kat.toUpperCase();
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            <div class="judul-surat">${escapeHtml(judulPernyataan)}</div>
+            ${nomorSurat ? `<div class="nomor-surat">Nomor: ${nomorSurat}</div>` : '<div style="margin-bottom:18px;"></div>'}
+
+            <p>Saya yang bertanda tangan di bawah ini:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('sp_nama')}</strong></td></tr>
+              <tr><td class="label-col">Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('sp_nik')}</td></tr>
+              <tr><td class="label-col">Tempat, Tanggal Lahir</td><td class="sep-col">:</td><td>${val('sp_ttl')}</td></tr>
+              <tr><td class="label-col">Agama / Status</td><td class="sep-col">:</td><td>${val('sp_agama')}</td></tr>
+              <tr><td class="label-col">Pekerjaan</td><td class="sep-col">:</td><td>${val('sp_pekerjaan')}</td></tr>
+              <tr><td class="label-col">Alamat Lengkap</td><td class="sep-col">:</td><td>${val('sp_alamat')}</td></tr>
+            </table>
+
+            <p style="margin-top: 14px;">${nl2br(rawVal('sp_isi', 'Dengan ini menyatakan dengan sesungguhnya bahwa segala keterangan dan informasi yang saya berikan adalah benar dan dapat dipertanggungjawabkan secara hukum.'))}</p>
+
+            <p>Demikian surat pernyataan ini saya buat dalam keadaan sehat jasmani dan rohani tanpa ada paksaan dari pihak mana pun untuk dapat dipergunakan sebagaimana mestinya.</p>
+
+            <table style="width: 100%; margin-top: 32px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 52%;"></td>
+                <td style="width: 48%; text-align: center;">
+                  <div>${kota}, ${tanggal}</div>
+                  <div>Yang Membuat Pernyataan,</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('sp_nama', '..............................')} )</strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // F. RENDER SURAT LAMARAN KERJA
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_lamaran') {
+        const lampiranList = rawVal('lm_lampiran', '1. Daftar Riwayat Hidup (CV)\n2. Fotokopi KTP dan Ijazah Terakhir\n3. Pas Foto Terbaru');
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            ${renderRecipientHeader()}
+
+            <div style="margin-bottom: 12px;">
+              <strong>Perihal : Lamaran Pekerjaan (${val('lm_posisi')})</strong>
+            </div>
+
+            <p>Dengan hormat,</p>
+            <p>Berdasarkan informasi lowongan pekerjaan yang saya peroleh melalui <strong>${val('lm_sumber')}</strong>, dengan ini saya mengajukan lamaran pekerjaan untuk mengisi posisi sebagai <strong>${val('lm_posisi')}</strong> di perusahaan yang Bapak/Ibu pimpin. Berikut data singkat saya:</p>
+
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('lm_nama')}</strong></td></tr>
+              <tr><td class="label-col">Tempat, Tanggal Lahir</td><td class="sep-col">:</td><td>${val('lm_ttl')}</td></tr>
+              <tr><td class="label-col">Pendidikan Terakhir</td><td class="sep-col">:</td><td>${val('lm_pendidikan')}</td></tr>
+              <tr><td class="label-col">Nomor Telepon / WA</td><td class="sep-col">:</td><td>${val('lm_telp')}</td></tr>
+              <tr><td class="label-col">Email</td><td class="sep-col">:</td><td>${val('lm_email')}</td></tr>
+              <tr><td class="label-col">Alamat Domisili</td><td class="sep-col">:</td><td>${val('lm_alamat')}</td></tr>
+            </table>
+
+            <p>Sebagai bahan pertimbangan Bapak/Ibu, bersama surat ini turut saya lampirkan berkas pendukung sebagai berikut:</p>
+            <div style="padding-left: 16px; margin-bottom: 12px;">${nl2br(lampiranList)}</div>
+
+            <p>Besar harapan saya untuk dapat diberikan kesempatan mengikuti tahap wawancara agar saya dapat menjelaskan potensi serta kontribusi yang dapat saya berikan bagi perusahaan. Atas perhatian dan kesempatan yang Bapak/Ibu berikan, saya ucapkan terima kasih.</p>
+
+            <table style="width: 100%; margin-top: 24px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 55%;"></td>
+                <td style="width: 45%; text-align: center;">
+                  <div>Hormat saya,</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('lm_nama', '..............................')} )</strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // G. RENDER SURAT IZIN TIDAK MASUK KERJA / SEKOLAH
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_izin') {
+        const jenisIzin = rawVal('iz_jenis', 'Sakit');
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            ${renderRecipientHeader()}
+
+            <div style="margin-bottom: 12px;">
+              <strong>Perihal : Permohonan Izin Tidak Masuk (${escapeHtml(jenisIzin)})</strong>
+            </div>
+
+            <p>Dengan hormat,</p>
+            <p>Melalui surat ini, saya memberitahukan bahwa:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('iz_nama')}</strong></td></tr>
+              <tr><td class="label-col">Jabatan / Kelas / NIM</td><td class="sep-col">:</td><td>${val('iz_id')}</td></tr>
+              <tr><td class="label-col">Alamat</td><td class="sep-col">:</td><td>${val('iz_alamat')}</td></tr>
+            </table>
+
+            <p>Bermaksud memohon izin untuk tidak dapat mengikuti kegiatan bekerja/belajar seperti biasa pada hari/tanggal <strong>${val('iz_tanggal')}</strong> dikarenakan <strong>${escapeHtml(jenisIzin)}</strong>.</p>
+            <p>${nl2br(rawVal('iz_alasan', 'Adapun keterangan lebih lanjut terkait ketidakhadiran tersebut akan segera saya susulkan apabila diperlukan.'))}</p>
+
+            <p>Demikian surat permohonan izin ini saya sampaikan. Atas perhatian dan izin yang Bapak/Ibu berikan, saya ucapkan terima kasih.</p>
+
+            <table style="width: 100%; margin-top: 30px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 55%;"></td>
+                <td style="width: 45%; text-align: center;">
+                  <div>Hormat saya,</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('iz_wali', rawVal('iz_nama', '..............................'))} )</strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // H. RENDER SURAT KETERANGAN USAHA (SKU)
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_sku') {
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            <!-- Kop Surat -->
+            <div style="text-align: center; border-bottom: 3px double #000; padding-bottom: 10px; margin-bottom: 16px;">
+              <div style="font-size: 14pt; font-weight: bold; text-transform: uppercase;">${val('sku_instansi', 'PEMERINTAH KELURAHAN / DESA')}</div>
+              <div style="font-size: 11pt;">${val('sku_kecamatan', 'Kecamatan / Kota / Kabupaten')}</div>
+            </div>
+
+            <div class="judul-surat">SURAT KETERANGAN USAHA</div>
+            <div class="nomor-surat">Nomor: ${nomorSurat || '503 / ....... / SKU / 2026'}</div>
+
+            <p>Yang bertanda tangan di bawah ini, <strong>${val('sku_jabatan_pejabat', 'Lurah / Kepala Desa')}</strong> menerangkan dengan sesungguhnya bahwa:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Lengkap</td><td class="sep-col">:</td><td><strong>${val('sku_nama')}</strong></td></tr>
+              <tr><td class="label-col">Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('sku_nik')}</td></tr>
+              <tr><td class="label-col">Tempat, Tanggal Lahir</td><td class="sep-col">:</td><td>${val('sku_ttl')}</td></tr>
+              <tr><td class="label-col">Alamat Tempat Tinggal</td><td class="sep-col">:</td><td>${val('sku_alamat_rumah')}</td></tr>
+            </table>
+
+            <p>Berdasarkan pengamatan dan laporan pengurus lingkungan setempat, nama tersebut di atas benar memiliki dan menjalankan kegiatan usaha sebagai berikut:</p>
+            <table class="data-table">
+              <tr><td class="label-col">Nama Usaha / Toko</td><td class="sep-col">:</td><td><strong>${val('sku_nama_usaha')}</strong></td></tr>
+              <tr><td class="label-col">Jenis / Bidang Usaha</td><td class="sep-col">:</td><td>${val('sku_jenis_usaha')}</td></tr>
+              <tr><td class="label-col">Alamat Lokasi Usaha</td><td class="sep-col">:</td><td>${val('sku_alamat_usaha')}</td></tr>
+              <tr><td class="label-col">Berdiri Sejak Tahun</td><td class="sep-col">:</td><td>${val('sku_tahun_berdiri')}</td></tr>
+              ${rawVal('sku_keperluan') ? `<tr><td class="label-col">Keperluan</td><td class="sep-col">:</td><td>${val('sku_keperluan')}</td></tr>` : ''}
+            </table>
+
+            <p>Demikian Surat Keterangan Usaha ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya oleh yang bersangkutan.</p>
+
+            <table style="width: 100%; margin-top: 28px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 50%;"></td>
+                <td style="width: 50%; text-align: center;">
+                  <div>Dikeluarkan di : ${kota}</div>
+                  <div>Pada Tanggal : ${tanggal}</div>
+                  <div style="margin-top: 6px; font-weight: bold;">${val('sku_jabatan_pejabat', 'Lurah / Kepala Desa')}</div>
+                  ${renderMateraiBlock()}
+                  <div><strong><u>${val('sku_pejabat', '..............................')}</u></strong></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // -----------------------------------------------------------------------
+      // I. RENDER SURAT JUAL BELI / KWITANSI BERMATERAI
+      // -----------------------------------------------------------------------
+      if (currentDocId === 'surat_jual_beli') {
+        printArea.innerHTML = `
+          <div class="surat-resmi">
+            <div class="judul-surat">SURAT PERJANJIAN JUAL BELI & TANDA TERIMA</div>
+            ${nomorSurat ? `<div class="nomor-surat">Nomor: ${nomorSurat}</div>` : '<div style="margin-bottom:14px;"></div>'}
+
+            <p>Pada hari ini, tanggal <strong>${tanggal}</strong> bertempat di <strong>${kota}</strong>, kami yang bertanda tangan di bawah ini:</p>
+
+            <table class="data-table">
+              <tr><td class="label-col"><strong>1. Nama Penjual</strong></td><td class="sep-col">:</td><td><strong>${val('jb_p1_nama')}</strong> (Selanjutnya disebut <strong>PIHAK PERTAMA</strong>)</td></tr>
+              <tr><td class="label-col">&nbsp;&nbsp;&nbsp;&nbsp;Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('jb_p1_nik')}</td></tr>
+              <tr><td class="label-col">&nbsp;&nbsp;&nbsp;&nbsp;Alamat</td><td class="sep-col">:</td><td>${val('jb_p1_alamat')}</td></tr>
+              <tr><td colspan="3" style="height:6px;"></td></tr>
+              <tr><td class="label-col"><strong>2. Nama Pembeli</strong></td><td class="sep-col">:</td><td><strong>${val('jb_p2_nama')}</strong> (Selanjutnya disebut <strong>PIHAK KEDUA</strong>)</td></tr>
+              <tr><td class="label-col">&nbsp;&nbsp;&nbsp;&nbsp;Nomor KTP (NIK)</td><td class="sep-col">:</td><td>${val('jb_p2_nik')}</td></tr>
+              <tr><td class="label-col">&nbsp;&nbsp;&nbsp;&nbsp;Alamat</td><td class="sep-col">:</td><td>${val('jb_p2_alamat')}</td></tr>
+            </table>
+
+            <p>Kedua belah pihak telah sepakat mengadakan transaksi jual beli atas objek barang/kendaraan dengan rincian sebagai berikut:</p>
+            <div style="border: 1px solid #000; padding: 10px 12px; margin: 8px 0 12px 0; background: #fafafa;">
+              <div><strong>Objek Jual Beli:</strong></div>
+              <div style="margin-bottom: 8px;">${nl2br(rawVal('jb_objek', '1 (satu) unit barang sesuai kesepakatan kedua belah pihak.'))}</div>
+              <div><strong>Nilai Transaksi:</strong> <span style="font-size: 13pt; font-weight: bold;">${val('jb_nominal')}</span></div>
+              <div><strong>Terbilang:</strong> <em>(${val('jb_terbilang')})</em></div>
+              <div><strong>Metode Pembayaran:</strong> ${val('jb_metode')}</div>
+            </div>
+
+            <p><strong>PIHAK PERTAMA</strong> menjamin bahwa objek tersebut adalah hak milik sah dan tidak sedang dalam sengketa/jaminan pihak lain. Sejak ditandatanganinya surat ini, hak kepemilikan dan tanggung jawab atas objek beralih sepenuhnya kepada <strong>PIHAK KEDUA</strong>.</p>
+
+            <table style="width: 100%; text-align: center; margin-top: 18px; border-collapse: collapse;">
+              <tr>
+                <td style="width: 50%; vertical-align: top;">
+                  <div>PIHAK KEDUA (Pembeli),</div>
+                  <div style="height: 66px;"></div>
+                  <div><strong>( ${val('jb_p2_nama', '..............................')} )</strong></div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                  <div>PIHAK PERTAMA (Penjual),</div>
+                  ${renderMateraiBlock()}
+                  <div><strong>( ${val('jb_p1_nama', '..............................')} )</strong></div>
+                </td>
+              </tr>
+            </table>
+
+            ${rawVal('jb_saksi') ? `
+              <div style="margin-top: 18px; font-size: 10.5pt; border-top: 1px dashed #64748b; padding-top: 8px;">
+                <strong>Saksi-Saksi:</strong> ${escapeHtml(rawVal('jb_saksi'))}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+    }
+
+    // =========================================================================
+    // 8. MANAJEMEN DRAFT (LOCALSTORAGE)
+    // =========================================================================
+    function getSavedDrafts() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveCurrentDraft() {
+      const docConfig = DOCUMENT_TYPES.find(d => d.id === currentDocId);
+      const clientHint = formData['cv_nama'] || formData['sk_p1_nama'] || formData['rs_nama'] ||
+                         formData['bk_p1_nama'] || formData['sp_nama'] || formData['lm_nama'] ||
+                         formData['iz_nama'] || formData['sku_nama'] || formData['jb_p1_nama'] || 'Tanpa Nama';
+
+      const drafts = getSavedDrafts();
+      const newDraft = {
+        id: 'draft_' + Date.now(),
+        docId: currentDocId,
+        docName: docConfig.name,
+        title: `${docConfig.shortName} — ${clientHint}`,
+        savedAt: new Date().toLocaleString('id-ID'),
+        cvSettings: {
+          template: currentCvTemplate,
+          accentColor: cvAccentColor,
+          accentSoft: cvAccentSoft,
+          showPhoto: document.getElementById('toggle-cv-photo') ? document.getElementById('toggle-cv-photo').checked : true
+        },
+        meta: {
+          kota: document.getElementById('meta_kota').value,
+          tanggal: document.getElementById('meta_tanggal').value,
+          nomor: document.getElementById('meta_nomor').value,
+          showRecipient: document.getElementById('toggle-recipient').checked,
+          tipeTujuan: document.getElementById('meta_tipe_tujuan').value,
+          kepada: document.getElementById('meta_kepada').value,
+          bagian: document.getElementById('meta_bagian').value,
+          alamatTujuan: document.getElementById('meta_alamat_tujuan').value,
+          showMaterai: document.getElementById('toggle-materai').checked
+        },
+        formData: { ...formData },
+        cvPhotoDataUrl: currentDocId === 'cv' ? cvPhotoDataUrl : ''
+      };
+
+      drafts.unshift(newDraft);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+      updateDraftBadge();
+      showToast('Draft dokumen berhasil disimpan!', 'success');
+    }
+
+    function loadDraft(draftId) {
+      const drafts = getSavedDrafts();
+      const found = drafts.find(d => d.id === draftId);
+      if (!found) return;
+
+      formData = { ...found.formData };
+      cvPhotoDataUrl = found.cvPhotoDataUrl || '';
+      if (found.cvSettings) {
+        currentCvTemplate = found.cvSettings.template || 'klasik';
+        cvAccentColor = found.cvSettings.accentColor || '#1e3a8a';
+        cvAccentSoft = found.cvSettings.accentSoft || '#eff6ff';
+        const photoCb = document.getElementById('toggle-cv-photo');
+        if (photoCb) photoCb.checked = found.cvSettings.showPhoto !== false;
+        renderCvTemplateSelector();
+        updateCvAccentButtons();
+      }
+      selectDocument(found.docId);
+
+      if (found.meta) {
+        document.getElementById('meta_kota').value = found.meta.kota || '';
+        document.getElementById('meta_tanggal').value = found.meta.tanggal || '';
+        document.getElementById('meta_nomor').value = found.meta.nomor || '';
+        document.getElementById('toggle-recipient').checked = !!found.meta.showRecipient;
+        document.getElementById('meta_tipe_tujuan').value = found.meta.tipeTujuan || 'perusahaan';
+        document.getElementById('meta_kepada').value = found.meta.kepada || '';
+        document.getElementById('meta_bagian').value = found.meta.bagian || '';
+        document.getElementById('meta_alamat_tujuan').value = found.meta.alamatTujuan || 'Di Tempat';
+        document.getElementById('toggle-materai').checked = !!found.meta.showMaterai;
+      }
+
+      renderDocument();
+      closeDraftModal();
+      showToast(`Memuat draft: ${found.title}`, 'info');
+    }
+
+    function deleteDraft(draftId) {
+      const drafts = getSavedDrafts().filter(d => d.id !== draftId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts));
+      updateDraftBadge();
+      renderDraftList();
+      showToast('Draft dihapus', 'info');
+    }
+
+    function updateDraftBadge() {
+      const count = getSavedDrafts().length;
+      document.getElementById('draft-badge').textContent = count;
+    }
+
+    function openDraftModal() {
+      renderDraftList();
+      const modal = document.getElementById('draft-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDraftModal() {
+      const modal = document.getElementById('draft-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderDraftList() {
+      const container = document.getElementById('draft-list-container');
+      const drafts = getSavedDrafts();
+
+      if (!drafts.length) {
+        container.innerHTML = `
+          <div class="text-center py-10 text-slate-400">
+            <i class="fa-solid fa-folder-open text-4xl mb-2"></i>
+            <p class="text-sm font-medium text-slate-600">Belum ada draft tersimpan</p>
+            <p class="text-xs">Klik tombol "Simpan Draft" di atas untuk menyimpan data dokumen pelanggan.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = drafts.map(d => `
+        <div class="p-3.5 rounded-xl border border-slate-200 hover:border-teal-400 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3 transition">
+          <div>
+            <div class="font-bold text-sm text-slate-800">${escapeHtml(d.title)}</div>
+            <div class="text-xs text-slate-500 mt-0.5">
+              <span class="font-medium text-teal-700">${escapeHtml(d.docName)}</span> • Disimpan: ${escapeHtml(d.savedAt)}
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="loadDraft('${d.id}')" class="px-3 py-1.5 theme-gradient text-white rounded-lg text-xs font-semibold hover:opacity-90 transition">
+              <i class="fa-solid fa-upload mr-1"></i> Muat
+            </button>
+            <button onclick="deleteDraft('${d.id}')" class="px-2.5 py-1.5 bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold hover:bg-rose-200 transition" title="Hapus Draft">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // 9. EKSPOR: PRINT / PDF, WORD (.DOC), & GAMBAR (PNG)
+    // =========================================================================
+    function printDocument() {
+      window.print();
+    }
+
+    function exportToWord() {
+      const docConfig = DOCUMENT_TYPES.find(d => d.id === currentDocId);
+      const contentHtml = document.getElementById('print-area').innerHTML;
+
+      const wordDocument = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office'
+              xmlns:w='urn:schemas-microsoft-com:office:word'
+              xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset="utf-8">
+          <title>${docConfig.name}</title>
+          <style>
+            @page { size: A4; margin: 2cm 2.2cm; }
+            body { font-family: 'Times New Roman', serif; font-size: 12pt; line-height: 1.5; color: #000000; }
+            .cv-layout { font-family: Arial, sans-serif; font-size: 10.5pt; }
+            .judul-surat { text-align: center; font-weight: bold; font-size: 14pt; text-decoration: underline; margin-bottom: 4pt; }
+            .nomor-surat { text-align: center; font-size: 11pt; margin-bottom: 14pt; }
+            table.data-table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt 0; }
+            table.data-table td { padding: 2pt 4pt; vertical-align: top; }
+            table.data-table td.label-col { width: 34%; }
+            table.data-table td.sep-col { width: 3%; }
+            .materai-box { border: 1px dashed #666; padding: 6pt 10pt; font-size: 8.5pt; text-align: center; display: inline-block; }
+          </style>
+        </head>
+        <body>
+          ${contentHtml}
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\ufeff', wordDocument], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${docConfig.shortName.replace(/[^a-zA-Z0-9]/g, '_')}_DokumenKu.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast('File Microsoft Word (.doc) berhasil diunduh!', 'success');
+    }
+
+    async function exportToPNG() {
+      const btn = document.getElementById('btn-export-png');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Memproses...</span>`;
+
+      try {
+        const element = document.getElementById('print-area');
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff'
+        });
+
+        const docConfig = DOCUMENT_TYPES.find(d => d.id === currentDocId);
+        const link = document.createElement('a');
+        link.download = `${docConfig.shortName.replace(/[^a-zA-Z0-9]/g, '_')}_DokumenKu.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        showToast('Gambar PNG siap dikirim ke WhatsApp!', 'success');
+      } catch (err) {
+        showToast('Gagal membuat gambar PNG. Silakan coba lagi.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // =========================================================================
+    // 10. UTILITAS UI (TOAST MESSAGE & SCROLL MOBILE)
+    // =========================================================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-rose-600 text-white',
+        info: 'bg-slate-800 text-white'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-exclamation',
+        info: 'fa-circle-info'
+      };
+
+      toast.className = `${colors[type] || colors.info} px-4 py-2.5 rounded-xl shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2 transition-all duration-300 transform translate-y-0 opacity-100`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${escapeHtml(message)}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    function scrollToSection(target) {
+      if (target === 'form') {
+        document.getElementById('dynamic-form').scrollIntoView({ behavior: 'smooth' });
+      } else {
+        document.getElementById('print-area').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function openCreatorModal() {
+      const modal = document.getElementById('creator-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeCreatorModal() {
+      const modal = document.getElementById('creator-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function copyCreatorPhone() {
+      const tempInput = document.createElement('input');
+      tempInput.value = '085867747461';
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showToast('Nomor CP 085867747461 berhasil disalin!', 'success');
+    }
+
+    // Jalankan aplikasi saat halaman selesai dimuat
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
