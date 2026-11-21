@@ -1,0 +1,3220 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Pas Foto Pro — Berkah Fotocopy</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .checkerboard {
+            background-color: #ffffff;
+            background-image: linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
+                              linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
+                              linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .dark .checkerboard {
+            background-color: #0f172a;
+            background-image: linear-gradient(45deg, #1e293b 25%, transparent 25%),
+                              linear-gradient(-45deg, #1e293b 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #1e293b 75%),
+                              linear-gradient(-45deg, transparent 75%, #1e293b 75%);
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #475569;
+            border-radius: 2px;
+        }
+
+        /* Print Media Query for Exact A4 Borderless Output */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0mm !important;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                overflow: hidden !important;
+            }
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                z-index: 99999 !important;
+                background: white !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            #print-image {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Hidden Print Container -->
+    <div id="print-area" class="hidden print:block">
+        <img id="print-image" src="" alt="Cetak A4 300 DPI">
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand Identity -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-slate-950 shadow-lg shadow-emerald-500/20 shrink-0">
+                    <i data-lucide="camera" class="w-5 h-5 stroke-[2.5]"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h1 class="font-bold text-sm sm:text-base tracking-tight leading-none text-white">Studio Pas Foto Pro — Berkah Fotocopy</h1>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">300 DPI</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                        <i data-lucide="map-pin" class="w-3 h-3 text-cyan-400 shrink-0"></i>
+                        <span>Jl. Raya Serang - Pertigaan Pasar Gorda</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 4-Step Stepper Navigation -->
+            <nav class="flex items-center bg-slate-950/90 p-1 rounded-xl border border-slate-800 overflow-x-auto max-w-full">
+                <button onclick="goToStep(1)" id="nav-step-1" class="step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-slate-800 text-emerald-400 shadow-sm whitespace-nowrap">
+                    <span class="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 text-[11px] flex items-center justify-center font-extrabold">1</span>
+                    <span>Upload & Upscale</span>
+                </button>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 mx-0.5 shrink-0"></i>
+                <button onclick="goToStep(2)" id="nav-step-2" class="step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white whitespace-nowrap">
+                    <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 text-[11px] flex items-center justify-center font-bold">2</span>
+                    <span>Ganti Background</span>
+                </button>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 mx-0.5 shrink-0"></i>
+                <button onclick="goToStep(3)" id="nav-step-3" class="step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white whitespace-nowrap">
+                    <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 text-[11px] flex items-center justify-center font-bold">3</span>
+                    <span>Multi-Crop & Jumlah Lembar</span>
+                </button>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-600 mx-0.5 shrink-0"></i>
+                <button onclick="goToStep(4)" id="nav-step-4" class="step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white whitespace-nowrap">
+                    <span class="w-5 h-5 rounded-full bg-slate-800 text-slate-300 text-[11px] flex items-center justify-center font-bold">4</span>
+                    <span>Tata Letak A4 & Cetak</span>
+                    <span id="nav-queue-badge" class="hidden ml-0.5 px-1.5 py-0.2 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-extrabold">0</span>
+                </button>
+            </nav>
+
+            <!-- Reset Action -->
+            <div class="flex items-center gap-2">
+                <button onclick="resetAllProject()" title="Mulai Pelanggan Baru (Kosongkan Semua)" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-rose-400"></i>
+                    <span class="hidden sm:inline">Reset Semua</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+        <!-- ===================================================================== -->
+        <!-- STEP 1: UPLOAD & UPSCALE / ENHANCE                                    -->
+        <!-- ===================================================================== -->
+        <section id="step-1" class="step-section grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left/Main Preview Area -->
+            <div class="lg:col-span-8 flex flex-col gap-4">
+                <div id="dropzone" class="relative flex-1 min-h-[430px] sm:min-h-[510px] rounded-2xl border-2 border-dashed border-slate-700 bg-slate-900/60 flex flex-col items-center justify-center p-6 transition-all overflow-hidden">
+                    
+                    <!-- Empty State Prompt -->
+                    <div id="upload-prompt" class="text-center max-w-md cursor-pointer" onclick="document.getElementById('file-input').click()">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+                            <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+                        </div>
+                        <h2 id="upload-heading" class="text-lg font-bold text-white mb-1">Upload Foto Pelanggan #1</h2>
+                        <p class="text-sm text-slate-400 mb-5">Seret & lepas file foto di sini, atau klik untuk memilih dari komputer/HP (JPG, PNG, WEBP).</p>
+                        <div class="flex flex-wrap items-center justify-center gap-2.5">
+                            <span class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold shadow-lg shadow-emerald-500/20 inline-flex items-center gap-2 transition">
+                                <i data-lucide="folder-open" class="w-4 h-4"></i> Pilih File Foto
+                            </span>
+                            <button type="button" onclick="event.stopPropagation(); loadSamplePortrait()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-sm font-medium transition">
+                                Gunakan Foto Contoh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Preview Canvas when Image Loaded (With Before/After Toggle) -->
+                    <div id="step1-preview-wrapper" class="hidden w-full h-full flex flex-col items-center justify-center">
+                        <div class="relative max-w-full max-h-[460px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 checkerboard">
+                            <canvas id="step1-canvas" class="max-w-full max-h-[450px] object-contain block"></canvas>
+                            <button type="button" onmousedown="showOriginalComparison(true)" onmouseup="showOriginalComparison(false)" onmouseleave="showOriginalComparison(false)" ontouchstart="showOriginalComparison(true)" ontouchend="showOriginalComparison(false)" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-slate-950/85 hover:bg-slate-900 border border-slate-700 text-xs font-semibold text-cyan-300 backdrop-blur-sm select-none shadow-lg">
+                                Tahan: Lihat Asli (Before)
+                            </button>
+                        </div>
+                        <div class="mt-3 flex flex-wrap items-center justify-between w-full gap-2 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl">
+                            <div class="flex items-center gap-3">
+                                <span id="img-dim-badge" class="font-semibold text-slate-200">Resolusi: -</span>
+                                <span id="img-upscale-badge" class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">Original 1x</span>
+                            </div>
+                            <button onclick="document.getElementById('file-input').click()" class="text-cyan-400 hover:underline font-medium flex items-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Ganti Foto Lain
+                            </button>
+                        </div>
+                    </div>
+
+                    <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" class="hidden">
+                </div>
+            </div>
+
+            <!-- Right Controls: Upscale & Image Enhancement -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-xl">
+                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-800">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-emerald-400"></i>
+                        <h3 class="font-bold text-base text-white">Upscale & Penajaman Wajah</h3>
+                    </div>
+
+                    <!-- Upscale Multiplier -->
+                    <div class="mb-5">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Resolusi Super (Multi-Step Bicubic)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="setUpscaleFactor(1)" id="upscale-btn-1" class="upscale-btn py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-xs transition">
+                                Asli (1x)
+                            </button>
+                            <button onclick="setUpscaleFactor(2)" id="upscale-btn-2" class="upscale-btn py-2.5 px-3 rounded-xl border border-slate-700 hover:border-emerald-500/60 text-slate-300 font-semibold text-xs transition">
+                                HD (2x)
+                            </button>
+                            <button onclick="setUpscaleFactor(4)" id="upscale-btn-4" class="upscale-btn py-2.5 px-3 rounded-xl border border-slate-700 hover:border-emerald-500/60 text-slate-300 font-semibold text-xs transition">
+                                Ultra HD (4x)
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1.5">Disarankan 2x atau 4x untuk foto kiriman WhatsApp agar hasil cetak 300 DPI tajam & halus.</p>
+                    </div>
+
+                    <!-- Sliders for Image Tuning -->
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-slate-300">Ketajaman (Unsharp Mask)</span>
+                                <span id="val-sharpness" class="text-emerald-400 font-bold">25%</span>
+                            </div>
+                            <input type="range" id="slider-sharpness" min="0" max="100" value="25" class="w-full" oninput="updateStep1Preview()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-slate-300">Kecerahan (Brightness)</span>
+                                <span id="val-brightness" class="text-emerald-400 font-bold">102%</span>
+                            </div>
+                            <input type="range" id="slider-brightness" min="60" max="150" value="102" class="w-full" oninput="updateStep1Preview()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-slate-300">Kontras (Contrast)</span>
+                                <span id="val-contrast" class="text-emerald-400 font-bold">104%</span>
+                            </div>
+                            <input type="range" id="slider-contrast" min="60" max="150" value="104" class="w-full" oninput="updateStep1Preview()">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs font-medium mb-1">
+                                <span class="text-slate-300">Saturasi Warna</span>
+                                <span id="val-saturation" class="text-emerald-400 font-bold">105%</span>
+                            </div>
+                            <input type="range" id="slider-saturation" min="50" max="150" value="105" class="w-full" oninput="updateStep1Preview()">
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-slate-800 flex gap-2">
+                        <button onclick="resetEnhancements()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+                            Reset
+                        </button>
+                        <button onclick="commitStep1AndNext()" id="btn-next-1" disabled class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                            <span>Lanjut: Ganti Background</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- STEP 2: BACKGROUND REMOVAL & REPLACEMENT                              -->
+        <!-- ===================================================================== -->
+        <section id="step-2" class="step-section hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Canvas Area -->
+            <div class="lg:col-span-8 flex flex-col gap-3">
+                <div class="relative min-h-[450px] sm:min-h-[520px] rounded-2xl border border-slate-800 bg-slate-900/70 flex flex-col items-center justify-center p-4 overflow-hidden">
+                    
+                    <!-- AI Processing Overlay -->
+                    <div id="bg-loading-overlay" class="hidden absolute inset-0 z-20 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 text-center">
+                        <div class="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <h4 id="bg-loading-title" class="font-bold text-base">Memproses Penghapusan Background AI...</h4>
+                        <p id="bg-loading-desc" class="text-xs text-slate-300 mt-1 max-w-sm">Sedang memisahkan subjek dari latar belakang secara otomatis.</p>
+                    </div>
+
+                    <!-- Interactive Canvas Container -->
+                    <div class="relative max-w-full max-h-[470px] rounded-xl overflow-hidden shadow-2xl border border-slate-700 checkerboard flex items-center justify-center">
+                        <canvas id="step2-canvas" class="max-w-full max-h-[460px] object-contain block cursor-crosshair touch-none"></canvas>
+                        <!-- Mode Indicator Badge on Canvas -->
+                        <div id="step2-canvas-mode-badge" class="hidden absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-slate-950/90 border border-amber-500/50 text-amber-300 text-[11px] font-bold shadow-lg flex items-center gap-1.5 pointer-events-none">
+                            <i data-lucide="move" class="w-3.5 h-3.5"></i>
+                            <span>Mode Geser Jas/Kemeja: Seret pakaian di kanvas</span>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Helper Bar -->
+                    <div class="mt-3 w-full flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl">
+                        <span id="step2-helper-text">Klik <strong class="text-emerald-400">"Hapus Background Otomatis (AI)"</strong> atau sapukan kuas untuk merapikan tepi.</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="undoMask()" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-medium hover:bg-slate-700 flex items-center gap-1">
+                                <i data-lucide="undo-2" class="w-3.5 h-3.5"></i> Undo
+                            </button>
+                            <button onclick="resetMask()" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 font-medium hover:bg-slate-700">
+                                Pulihkan Semua
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Controls: Tabbed Background Color/Brush & Jas/Kemeja -->
+            <div class="lg:col-span-4 flex flex-col gap-4">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-xl flex flex-col gap-4">
+                    
+                    <!-- Sub-Navigation Tabs inside Step 2 -->
+                    <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                        <button type="button" onclick="switchStep2SubTab('bg')" id="subtab-btn-bg" class="py-2 px-3 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 shadow-sm flex items-center justify-center gap-1.5 transition">
+                            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                            <span>Background & Kuas</span>
+                        </button>
+                        <button type="button" onclick="switchStep2SubTab('attire')" id="subtab-btn-attire" class="py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition">
+                            <i data-lucide="shirt" class="w-3.5 h-3.5 text-amber-400"></i>
+                            <span>Jas & Kemeja</span>
+                            <span id="attire-active-dot" class="hidden w-2 h-2 rounded-full bg-amber-400"></span>
+                        </button>
+                    </div>
+
+                    <!-- SUB-PANEL A: BACKGROUND COLOR & MANUAL BRUSH -->
+                    <div id="step2-panel-bg" class="space-y-4">
+                        <!-- Step 2A: Automatic AI / Smart Color Removal -->
+                        <div>
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <i data-lucide="wand-2" class="w-4 h-4 text-emerald-400"></i>
+                                <h3 class="font-bold text-sm text-white">1. Hapus Background Otomatis</h3>
+                            </div>
+                            <div class="grid grid-cols-1 gap-2">
+                                <button onclick="runAutoBackgroundRemoval()" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                    <span>Hapus Background Otomatis (AI)</span>
+                                </button>
+                                <button onclick="runSmartEdgeFloodFill()" class="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-xs flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="pipette" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                    <span>Hapus Cepat Latar Polos (Instant)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2B: Choose Replacement Background Color -->
+                        <div class="pt-3.5 border-t border-slate-800">
+                            <h3 class="font-bold text-sm text-white mb-2.5">2. Warna Latar Pas Foto</h3>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button onclick="setBgColor('#DB1514', 'Merah Pas Foto')" title="Merah Pas Foto (#DB1514)" class="bg-swatch h-10 rounded-xl border-2 border-white shadow-sm ring-2 ring-emerald-400 transition" style="background-color: #DB1514;"></button>
+                                <button onclick="setBgColor('#0055B8', 'Biru Pas Foto')" title="Biru Pas Foto (#0055B8)" class="bg-swatch h-10 rounded-xl border-2 border-slate-700 shadow-sm transition" style="background-color: #0055B8;"></button>
+                                <button onclick="setBgColor('#FFFFFF', 'Putih')" title="Putih (#FFFFFF)" class="bg-swatch h-10 rounded-xl border-2 border-slate-400 shadow-sm transition" style="background-color: #FFFFFF;"></button>
+                                <button onclick="setBgColor('#E2E8F0', 'Abu-abu')" title="Abu-abu (#E2E8F0)" class="bg-swatch h-10 rounded-xl border-2 border-slate-700 shadow-sm transition" style="background-color: #E2E8F0;"></button>
+                                <label title="Color Picker Kustom" class="h-10 rounded-xl border-2 border-dashed border-slate-600 flex items-center justify-center cursor-pointer hover:border-emerald-400 overflow-hidden relative bg-slate-800">
+                                    <i data-lucide="palette" class="w-4 h-4 text-slate-300"></i>
+                                    <input type="color" id="custom-bg-picker" value="#DB1514" oninput="setBgColor(this.value, 'Kustom')" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer">
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between text-xs mt-2 text-slate-400">
+                                <span>Terpilih: <strong id="selected-bg-label" class="text-white">Merah Pas Foto (#DB1514)</strong></span>
+                                <button onclick="setBgColor('transparent', 'Transparan')" class="text-cyan-400 hover:underline">Transparan</button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2C: Manual Brush & Edge Refinement -->
+                        <div class="pt-3.5 border-t border-slate-800 space-y-3">
+                            <h3 class="font-bold text-sm text-white">3. Alat Perapi Manual & Kehalusan Tepi</h3>
+                            
+                            <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                <button onclick="setBrushTool('magic')" id="tool-magic" class="tool-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-emerald-400 shadow-sm">
+                                    Tongkat Ajaib
+                                </button>
+                                <button onclick="setBrushTool('erase')" id="tool-erase" class="tool-btn py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400">
+                                    Kuas Hapus
+                                </button>
+                                <button onclick="setBrushTool('restore')" id="tool-restore" class="tool-btn py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400">
+                                    Kuas Pulihkan
+                                </button>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Ukuran Kuas / Toleransi Klik</span>
+                                    <span id="val-brush-size" class="text-emerald-400 font-bold">28 px</span>
+                                </div>
+                                <input type="range" id="slider-brush-size" min="5" max="100" value="28" class="w-full" oninput="document.getElementById('val-brush-size').textContent = this.value + ' px'">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Perhalus Tepi Rambut (Feathering)</span>
+                                    <span id="val-feather" class="text-emerald-400 font-bold">2 px</span>
+                                </div>
+                                <input type="range" id="slider-feather" min="0" max="8" step="0.5" value="2" class="w-full" oninput="document.getElementById('val-feather').textContent = this.value + ' px'; renderStep2Composite()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-PANEL B: JAS & KEMEJA (FORMAL ATTIRE OVERLAY) -->
+                    <div id="step2-panel-attire" class="hidden space-y-4">
+                        <!-- Category Filter & None Option -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                <button type="button" onclick="setAttireCategory('all')" id="attire-cat-all" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-amber-300">Semua</button>
+                                <button type="button" onclick="setAttireCategory('pria')" id="attire-cat-pria" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-white">Pria</button>
+                                <button type="button" onclick="setAttireCategory('wanita')" id="attire-cat-wanita" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-white">Wanita</button>
+                            </div>
+                            <button type="button" onclick="selectAttire('none')" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950/50 border border-slate-700 hover:border-rose-500/40 text-[11px] font-semibold text-slate-300 hover:text-rose-300 transition">
+                                Lepas Jas
+                            </button>
+                        </div>
+
+                        <!-- Template Grid -->
+                        <div id="attire-grid" class="grid grid-cols-3 gap-2 max-h-[210px] overflow-y-auto pr-1">
+                            <!-- Populated dynamically by renderAttireCatalog() -->
+                        </div>
+
+                        <!-- Attire Transform & Lighting Controls -->
+                        <div id="attire-controls-box" class="pt-3 border-t border-slate-800 space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                                    <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                                    <span>Atur Posisi & Ukuran Pakaian</span>
+                                </span>
+                                <button type="button" onclick="resetAttireTransform()" class="text-[11px] text-cyan-400 hover:underline font-medium">Reset Posisi</button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="text-slate-300">Geser Kiri/Kanan</span>
+                                        <span id="val-attire-x" class="text-amber-400 font-bold">0%</span>
+                                    </div>
+                                    <input type="range" id="slider-attire-x" min="-40" max="40" step="0.5" value="0" class="w-full" oninput="updateAttireTransformFromSliders()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="text-slate-300">Naik / Turun Leher</span>
+                                        <span id="val-attire-y" class="text-amber-400 font-bold">18%</span>
+                                    </div>
+                                    <input type="range" id="slider-attire-y" min="-35" max="55" step="0.5" value="18" class="w-full" oninput="updateAttireTransformFromSliders()">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="text-slate-300">Lebar Bahu</span>
+                                        <span id="val-attire-scaleX" class="text-amber-400 font-bold">92%</span>
+                                    </div>
+                                    <input type="range" id="slider-attire-scaleX" min="45" max="155" step="1" value="92" class="w-full" oninput="updateAttireTransformFromSliders()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="text-slate-300">Tinggi Badan</span>
+                                        <span id="val-attire-scaleY" class="text-amber-400 font-bold">92%</span>
+                                    </div>
+                                    <input type="range" id="slider-attire-scaleY" min="45" max="155" step="1" value="92" class="w-full" oninput="updateAttireTransformFromSliders()">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="text-slate-300">Kemiringan Bahu</span>
+                                        <span id="val-attire-rot" class="text-amber-400 font-bold">0°</span>
+                                    </div>
+                                    <input type="range" id="slider-attire-rot" min="-20" max="20" step="0.5" value="0" class="w-full" oninput="updateAttireTransformFromSliders()">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-[11px] mb-0.5">
+                                        <span class="text-slate-300">Kecerahan Jas</span>
+                                        <span id="val-attire-bright" class="text-amber-400 font-bold">100%</span>
+                                    </div>
+                                    <input type="range" id="slider-attire-bright" min="65" max="135" step="1" value="100" class="w-full" oninput="updateAttireTransformFromSliders()">
+                                </div>
+                            </div>
+
+                            <!-- Neck/Shoulder Helper Tools -->
+                            <div class="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                                <button type="button" onclick="autoCleanBelowNeck()" class="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold flex items-center gap-1 transition" title="Hapus baju asli di bawah garis kerah agar tidak menumpuk">
+                                    <i data-lucide="scissors" class="w-3 h-3"></i>
+                                    <span>Bersihkan Baju Asli di Bawah Kerah</span>
+                                </button>
+                                <button type="button" onclick="switchStep2SubTab('bg'); setBrushTool('erase');" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition">
+                                    Kuas Hapus Leher
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="pt-3 border-t border-slate-800 flex gap-2">
+                        <button onclick="goToStep(1)" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+                            Kembali
+                        </button>
+                        <button onclick="commitStep2AndNext()" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                            <span>Lanjut: Pilih Multi-Ukuran</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- STEP 3: MULTI-CROP & JUMLAH LEMBAR PER UKURAN (INTI PERMINTAAN USER)  -->
+        <!-- ===================================================================== -->
+        <section id="step-3" class="step-section hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left Interactive Crop Viewport for Active Size -->
+            <div class="lg:col-span-6 flex flex-col gap-3">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 flex flex-col items-center justify-center shadow-xl">
+                    <!-- Top Active Size Indicator -->
+                    <div class="w-full flex items-center justify-between mb-2.5 px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span class="text-xs font-bold text-white">Sedang Mengatur Crop: <span id="active-crop-title" class="text-emerald-400">Ukuran 3 × 4 cm</span></span>
+                        </div>
+                        <label class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="toggle-face-guide" checked onchange="renderStep3Cropper()" class="rounded accent-emerald-500">
+                            <span>Panduan Wajah</span>
+                        </label>
+                    </div>
+
+                    <!-- Crop Canvas -->
+                    <div class="relative w-full h-[380px] sm:h-[420px] bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center overflow-hidden select-none">
+                        <canvas id="step3-canvas" class="max-w-full max-h-full cursor-move touch-none"></canvas>
+                    </div>
+
+                    <!-- Zoom & Rotate Fine-Tune Controls for Active Size -->
+                    <div class="w-full mt-3 pt-3 border-t border-slate-800 space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Zoom Ukuran Ini</span>
+                                    <span id="val-crop-zoom" class="text-emerald-400 font-bold">100%</span>
+                                </div>
+                                <input type="range" id="slider-crop-zoom" min="40" max="280" value="100" class="w-full" oninput="updateActiveCropTransform()">
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium mb-1">
+                                    <span class="text-slate-300">Luruskan Kepala</span>
+                                    <span id="val-crop-rotate" class="text-emerald-400 font-bold">0°</span>
+                                </div>
+                                <input type="range" id="slider-crop-rotate" min="-20" max="20" step="0.5" value="0" class="w-full" oninput="updateActiveCropTransform()">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                            <span>Seret foto di kanvas untuk menggeser posisi kepala.</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="resetActiveCropTransform()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium">
+                                    Reset Posisi
+                                </button>
+                                <button onclick="copyCropToAllSizes()" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-semibold">
+                                    Terapkan Posisi ke Semua Ukuran
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Multi-Size Checkboxes & Quantities per Size -->
+            <div class="lg:col-span-6 flex flex-col gap-4">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-xl flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
+                            <div>
+                                <h3 class="font-bold text-base text-white flex items-center gap-2">
+                                    <i data-lucide="check-square" class="w-5 h-5 text-emerald-400"></i>
+                                    <span>Pilih Ukuran & Jumlah Lembar</span>
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Centang beberapa ukuran sekaligus dan tentukan masing-masing jumlah lembarnya.</p>
+                            </div>
+                            <button onclick="selectAllStandardSizes()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-semibold text-cyan-300">
+                                Centang Paket Lengkap
+                            </button>
+                        </div>
+
+                        <!-- Multi-Size Cards Container -->
+                        <div id="multi-size-cards" class="space-y-3">
+                            <!-- Cards rendered dynamically by renderMultiSizeCards() -->
+                        </div>
+                    </div>
+
+                    <!-- Summary & Primary Action Buttons -->
+                    <div class="mt-5 pt-4 border-t border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400">Total Foto Pelanggan Ini:</span>
+                            <span id="step3-total-summary" class="text-xs sm:text-sm font-bold text-emerald-400">0 ukuran terpilih (0 lembar)</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                            <button onclick="goToStep(2)" class="sm:col-span-3 py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition">
+                                Kembali
+                            </button>
+                            <button onclick="addSelectedSizesToA4(true)" class="sm:col-span-9 py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                                <span>Tambahkan Semua Ukuran Terpilih ke Kertas A4</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================================== -->
+        <!-- STEP 4: A4 SHEET AUTO-PACKING, MULTI-CUSTOMER QUEUE & 300 DPI PRINT   -->
+        <!-- ===================================================================== -->
+        <section id="step-4" class="step-section hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left: A4 Live Paper Preview Canvas -->
+            <div class="lg:col-span-7 flex flex-col gap-3">
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 flex flex-col items-center justify-center shadow-xl">
+                    
+                    <!-- A4 Status Header -->
+                    <div class="w-full max-w-[460px] flex flex-wrap items-center justify-between gap-2 text-xs mb-3">
+                        <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                            <i data-lucide="file-text" class="w-4 h-4 text-emerald-400"></i>
+                            <span id="a4-dim-label">Kertas A4 Portrait (21.0 × 29.7 cm)</span>
+                        </span>
+                        <span id="a4-usage-badge" class="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                            Terpakai: 0%
+                        </span>
+                    </div>
+
+                    <!-- A4 Paper Aspect Ratio Frame -->
+                    <div id="a4-frame-wrapper" class="relative w-full max-w-[420px] aspect-[210/297] bg-white shadow-2xl rounded-sm overflow-hidden border-2 border-slate-700 transition-all duration-300">
+                        <canvas id="a4-preview-canvas" class="w-full h-full block cursor-grab active:cursor-grabbing touch-none"></canvas>
+                    </div>
+
+                    <!-- Interactive Canvas Tips -->
+                    <div class="w-full max-w-[460px] mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
+                        <span>Geser foto manual di kertas • Klik 2x foto untuk putar 90°</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="duplicateSelectedA4Item()" class="text-cyan-400 hover:underline font-medium">Duplikat Terpilih</button>
+                            <button onclick="clearA4Queue()" class="text-rose-400 hover:underline font-medium">Kosongkan Kertas</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Customer Queue Summary, Layout Options & Export -->
+            <div class="lg:col-span-5 flex flex-col gap-4">
+                
+                <!-- Card 1: Antrean Foto & Ukuran di Kertas A4 -->
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-xl">
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
+                            <h3 class="font-bold text-sm text-white">Antrean Foto di Kertas A4</h3>
+                        </div>
+                        <button onclick="startNextCustomer()" class="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center gap-1.5 transition">
+                            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                            <span>+ Tambah Foto Pelanggan Lain</span>
+                        </button>
+                    </div>
+
+                    <!-- Queue List -->
+                    <div id="a4-queue-list" class="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+                        <!-- Rendered dynamically -->
+                    </div>
+
+                    <div class="mt-3 pt-3 border-t border-slate-800 flex gap-2">
+                        <button onclick="goToStep(3)" class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center gap-1 transition">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            <span>Ubah Crop/Jumlah</span>
+                        </button>
+                        <button onclick="runA4BinPacking()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                            <span>Susun Ulang Otomatis (Auto-Pack)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Orientasi, Jarak Potong & Garis Bantu -->
+                <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 shadow-xl space-y-3.5">
+                    <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                        <i data-lucide="scissors" class="w-4 h-4 text-cyan-400"></i>
+                        <span>Pengaturan Kertas & Garis Potong</span>
+                    </h3>
+
+                    <!-- Paper Orientation -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="setPaperOrientation('portrait')" id="orient-portrait" class="py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                            <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+                            <span>Portrait (Berdiri)</span>
+                        </button>
+                        <button onclick="setPaperOrientation('landscape')" id="orient-landscape" class="py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+                            <i data-lucide="tablet" class="w-3.5 h-3.5 rotate-90"></i>
+                            <span>Landscape (Tidur)</span>
+                        </button>
+                    </div>
+
+                    <!-- Gap Quick Presets -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="text-slate-300">Jarak Potong (Gap Antar Foto)</span>
+                            <span id="val-photo-gap" class="font-bold text-emerald-400">2 mm</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button onclick="setPhotoGap(0)" id="gap-btn-0" class="gap-btn py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300">0 mm</button>
+                            <button onclick="setPhotoGap(2)" id="gap-btn-2" class="gap-btn py-1.5 rounded-lg border-2 border-emerald-500 bg-emerald-500/15 text-xs font-bold text-emerald-300">2 mm</button>
+                            <button onclick="setPhotoGap(3)" id="gap-btn-3" class="gap-btn py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300">3 mm</button>
+                            <button onclick="setPhotoGap(5)" id="gap-btn-5" class="gap-btn py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300">5 mm</button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs text-slate-300">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="chk-cut-lines" checked onchange="saveSettings(); renderA4Preview()" class="rounded accent-emerald-500">
+                            <span>Garis Bantu Potong (Border Tipis)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="chk-auto-rotate" checked onchange="saveSettings(); runA4BinPacking()" class="rounded accent-emerald-500">
+                            <span>Rotasi Otomatis (90°)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Card 3: Export 300 DPI & Direct Print -->
+                <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 rounded-2xl p-5 shadow-xl border border-emerald-500/30">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="font-bold text-sm text-white">Siap Cetak Presisi 300 DPI</h3>
+                            <p id="export-px-info" class="text-[11px] text-slate-400">2480 × 3508 px (Skala 1:1 Penggaris)</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-extrabold">A4 300 DPI</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <button onclick="printA4Direct()" class="py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition">
+                            <i data-lucide="printer" class="w-4 h-4"></i>
+                            <span>Cetak Langsung (Print A4)</span>
+                        </button>
+                        <div class="flex gap-1.5">
+                            <button onclick="exportA4File('jpg')" class="flex-1 py-3 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                <span>JPG 300 DPI</span>
+                            </button>
+                            <button onclick="exportA4File('png')" class="py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-xs flex items-center justify-center transition" title="Download PNG 300 DPI">
+                                <span>PNG</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Application Logic -->
+    <script>
+        // =========================================================================
+        // CONSTANTS & LOCAL STORAGE SETTINGS
+        // =========================================================================
+        const DPI = 300;
+        const MM_TO_PX = DPI / 25.4;    // ~11.8110236 px per mm
+        const CM_TO_PX = DPI / 2.54;    // ~118.110236 px per cm
+        const A4_SHORT_MM = 210;
+        const A4_LONG_MM = 297;
+
+        const STORAGE_KEY = 'berkah_fotocopy_pasfoto_prefs_v2';
+
+        // =========================================================================
+        // GLOBAL APPLICATION STATE
+        // =========================================================================
+        const state = {
+            currentStep: 1,
+            customerCounter: 1,
+            rawImage: null,             // Original HTMLImageElement
+            upscaleFactor: 1,           // 1, 2, or 4
+            enhancedCanvas: null,       // Step 1 output canvas (upscaled + filtered)
+            
+            // Step 2: Background Removal & Masking
+            maskCanvas: null,           // Alpha mask canvas
+            maskHistory: [],            // Undo stack
+            bgColor: '#DB1514',         // Selected background color
+            bgColorName: 'Merah Pas Foto (#DB1514)',
+            step2SubTab: 'bg',          // 'bg' | 'attire'
+            brushTool: 'magic',         // 'magic' | 'erase' | 'restore'
+            isDrawingMask: false,
+            compositedCanvas: null,     // Step 2 output canvas (Subject + New BG + Attire)
+
+            // Step 2B: Formal Attire (Jas & Kemeja) State
+            attireCategory: 'all',      // 'all' | 'pria' | 'wanita'
+            selectedAttireId: 'none',   // 'none' or catalog ID
+            attireTransform: {
+                xPct: 0,                // Horizontal offset % of canvas width
+                yPct: 18,               // Vertical offset % of canvas height
+                scaleX: 0.92,           // Width multiplier relative to canvas width
+                scaleY: 0.92,           // Height multiplier relative to canvas width
+                rotation: 0,            // Degrees
+                brightness: 100         // %
+            },
+            isDraggingAttire: false,
+            attireDragStartX: 0,
+            attireDragStartY: 0,
+            attireStartXPct: 0,
+            attireStartYPct: 0,
+
+            // Step 3: Multi-Size Selection & Per-Size Independent Crop States
+            activeCropKey: '3x4',       // Currently previewed size in Step 3 cropper
+            sizes: {
+                '2x3': {
+                    key: '2x3',
+                    title: 'Ukuran 2 × 3 cm',
+                    subtitle: '2.0 × 3.0 cm (Standar IJAZAH / KTP)',
+                    wCm: 2.0,
+                    hCm: 3.0,
+                    enabled: true,
+                    qty: 4,
+                    zoom: 1.0,
+                    rotation: 0,
+                    offsetX: 0,
+                    offsetY: 0
+                },
+                '3x4': {
+                    key: '3x4',
+                    title: 'Ukuran 3 × 4 cm',
+                    subtitle: '3.0 × 4.0 cm (Standar SKCK / Lamaran)',
+                    wCm: 3.0,
+                    hCm: 4.0,
+                    enabled: true,
+                    qty: 4,
+                    zoom: 1.0,
+                    rotation: 0,
+                    offsetX: 0,
+                    offsetY: 0
+                },
+                '4x6': {
+                    key: '4x6',
+                    title: 'Ukuran 4 × 6 cm',
+                    subtitle: '4.0 × 6.0 cm (Standar Buku Nikah / Paspor)',
+                    wCm: 4.0,
+                    hCm: 6.0,
+                    enabled: true,
+                    qty: 2,
+                    zoom: 1.0,
+                    rotation: 0,
+                    offsetX: 0,
+                    offsetY: 0
+                },
+                'custom': {
+                    key: 'custom',
+                    title: 'Ukuran Kustom (cm)',
+                    subtitle: 'Visa 5×5 cm / Bebas',
+                    wCm: 5.0,
+                    hCm: 5.0,
+                    enabled: false,
+                    qty: 2,
+                    zoom: 1.0,
+                    rotation: 0,
+                    offsetX: 0,
+                    offsetY: 0
+                }
+            },
+            isDraggingCrop: false,
+            dragStartX: 0,
+            dragStartY: 0,
+
+            // Step 4: Multi-Customer Queue & A4 Bin-Packing
+            // Each entry in a4Queue: { id, customerName, sizeKey, label, wCm, hCm, qty, photoCanvas }
+            a4Queue: [],
+            // Placed visual items on A4 canvas: { uid, queueId, label, x, y, w, h, rotated, canvas }
+            a4PlacedItems: [],
+            paperOrientation: 'portrait', // 'portrait' | 'landscape'
+            photoGapMm: 2,
+            paperMarginMm: 5,
+            selectedA4ItemUid: null,
+            isDraggingA4Item: false,
+            a4DragOffsetX: 0,
+            a4DragOffsetY: 0
+        };
+
+        // Initialize on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedPreferences();
+            lucide.createIcons();
+            setupFileDropzone();
+            setupStep2Events();
+            renderAttireCatalog();
+            setupStep3Events();
+            setupStep4Events();
+            renderMultiSizeCards();
+            renderA4QueueList();
+            renderA4Preview();
+        });
+
+        function loadSavedPreferences() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const prefs = JSON.parse(raw);
+                if (typeof prefs.photoGapMm === 'number') {
+                    state.photoGapMm = prefs.photoGapMm;
+                    updateGapButtonsUI(prefs.photoGapMm);
+                }
+                if (typeof prefs.cutLines === 'boolean') {
+                    document.getElementById('chk-cut-lines').checked = prefs.cutLines;
+                }
+                if (typeof prefs.autoRotate === 'boolean') {
+                    document.getElementById('chk-auto-rotate').checked = prefs.autoRotate;
+                }
+                if (prefs.paperOrientation === 'landscape' || prefs.paperOrientation === 'portrait') {
+                    setPaperOrientation(prefs.paperOrientation, false);
+                }
+            } catch (e) {
+                console.warn('Gagal memuat preferensi lokal:', e);
+            }
+        }
+
+        function saveSettings() {
+            try {
+                const prefs = {
+                    photoGapMm: state.photoGapMm,
+                    cutLines: document.getElementById('chk-cut-lines').checked,
+                    autoRotate: document.getElementById('chk-auto-rotate').checked,
+                    paperOrientation: state.paperOrientation
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+            } catch (e) {
+                // Ignore storage quota issues
+            }
+        }
+
+        function getA4DimensionsPx() {
+            const wMm = state.paperOrientation === 'portrait' ? A4_SHORT_MM : A4_LONG_MM;
+            const hMm = state.paperOrientation === 'portrait' ? A4_LONG_MM : A4_SHORT_MM;
+            return {
+                wMm,
+                hMm,
+                wPx: Math.round(wMm * MM_TO_PX),
+                hPx: Math.round(hMm * MM_TO_PX)
+            };
+        }
+
+        // =========================================================================
+        // UI HELPERS & STEPPER NAVIGATION
+        // =========================================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const styles = {
+                info: 'bg-slate-900 text-slate-100 border-slate-700',
+                success: 'bg-emerald-950 text-emerald-200 border-emerald-500/50',
+                warning: 'bg-amber-950 text-amber-200 border-amber-500/50',
+                error: 'bg-rose-950 text-rose-200 border-rose-500/50'
+            };
+            toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-2xl text-xs font-medium flex items-center gap-2.5 transform transition-all duration-300 translate-y-2 opacity-0 ${styles[type] || styles.info}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3400);
+        }
+
+        function goToStep(stepNumber) {
+            if (stepNumber > 1 && stepNumber < 4 && !state.rawImage) {
+                showToast('Silakan upload foto pelanggan terlebih dahulu!', 'warning');
+                return;
+            }
+            if (stepNumber === 4 && !state.rawImage && state.a4Queue.length === 0) {
+                showToast('Belum ada foto yang diproses. Silakan upload foto terlebih dahulu!', 'warning');
+                return;
+            }
+
+            // Ensure intermediate canvases are ready if user clicks stepper directly
+            if (state.rawImage && state.currentStep === 1 && stepNumber > 1) {
+                generateEnhancedCanvas();
+                if (!state.maskCanvas) initMaskCanvas();
+                generateCompositedCanvas();
+            }
+            if (state.rawImage && state.currentStep === 2 && stepNumber > 2) {
+                generateCompositedCanvas();
+            }
+
+            state.currentStep = stepNumber;
+
+            document.querySelectorAll('.step-section').forEach((sec, idx) => {
+                sec.classList.toggle('hidden', idx + 1 !== stepNumber);
+            });
+
+            for (let i = 1; i <= 4; i++) {
+                const btn = document.getElementById(`nav-step-${i}`);
+                const badge = btn.querySelector('span');
+                if (i === stepNumber) {
+                    btn.className = 'step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all bg-slate-800 text-emerald-400 shadow-sm whitespace-nowrap';
+                    badge.className = 'w-5 h-5 rounded-full bg-emerald-500 text-slate-950 text-[11px] flex items-center justify-center font-extrabold';
+                } else if (i < stepNumber) {
+                    btn.className = 'step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-cyan-400 hover:bg-slate-800/60 whitespace-nowrap';
+                    badge.className = 'w-5 h-5 rounded-full bg-cyan-500 text-slate-950 text-[11px] flex items-center justify-center font-extrabold';
+                } else {
+                    btn.className = 'step-btn flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-white whitespace-nowrap';
+                    badge.className = 'w-5 h-5 rounded-full bg-slate-800 text-slate-300 text-[11px] flex items-center justify-center font-bold';
+                }
+            }
+
+            if (stepNumber === 2) renderStep2Composite();
+            if (stepNumber === 3) {
+                renderMultiSizeCards();
+                renderStep3Cropper();
+            }
+            if (stepNumber === 4) {
+                renderA4QueueList();
+                renderA4Preview();
+            }
+        }
+
+        function resetAllProject() {
+            state.rawImage = null;
+            state.enhancedCanvas = null;
+            state.maskCanvas = null;
+            state.compositedCanvas = null;
+            state.upscaleFactor = 1;
+            state.customerCounter = 1;
+            state.a4Queue = [];
+            state.a4PlacedItems = [];
+            state.maskHistory = [];
+            state.selectedAttireId = 'none';
+            resetAttireTransform(false);
+            renderAttireCatalog();
+
+            document.getElementById('upload-heading').textContent = 'Upload Foto Pelanggan #1';
+            document.getElementById('upload-prompt').classList.remove('hidden');
+            document.getElementById('step1-preview-wrapper').classList.add('hidden');
+            document.getElementById('btn-next-1').disabled = true;
+            document.getElementById('file-input').value = '';
+            updateQueueBadge();
+            goToStep(1);
+            showToast('Workspace direset bersih untuk sesi baru.', 'info');
+        }
+
+        // =========================================================================
+        // STEP 1: UPLOAD, UPSCALE (MULTI-STEP BICUBIC) & UNSHARP MASKING
+        // =========================================================================
+        function setupFileDropzone() {
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('file-input');
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleImageFile(e.target.files[0]);
+                }
+            });
+
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('border-emerald-400', 'bg-emerald-950/20');
+            });
+
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('border-emerald-400', 'bg-emerald-950/20');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('border-emerald-400', 'bg-emerald-950/20');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleImageFile(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        function handleImageFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Format file harus berupa gambar (JPG, PNG, WEBP).', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.rawImage = img;
+                    state.maskCanvas = null;
+                    // Auto-recommend 2x upscale if photo is below 1000px
+                    state.upscaleFactor = (img.width < 1000 || img.height < 1000) ? 2 : 1;
+                    updateUpscaleButtonsUI();
+                    
+                    document.getElementById('upload-prompt').classList.add('hidden');
+                    document.getElementById('step1-preview-wrapper').classList.remove('hidden');
+                    document.getElementById('btn-next-1').disabled = false;
+                    
+                    updateStep1Preview();
+                    showToast(`Foto Pelanggan #${state.customerCounter} berhasil dimuat!`, 'success');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showOriginalComparison(showOrig) {
+            if (!state.rawImage || !state.enhancedCanvas) return;
+            const previewCanvas = document.getElementById('step1-canvas');
+            const source = showOrig ? state.rawImage : state.enhancedCanvas;
+            previewCanvas.width = source.width;
+            previewCanvas.height = source.height;
+            previewCanvas.getContext('2d').drawImage(source, 0, 0);
+        }
+
+        function loadSamplePortrait() {
+            const c = document.createElement('canvas');
+            c.width = 640;
+            c.height = 800;
+            const ctx = c.getContext('2d');
+
+            // Studio Light Gray Backdrop
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, 800);
+            bgGrad.addColorStop(0, '#cbd5e1');
+            bgGrad.addColorStop(1, '#94a3b8');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 640, 800);
+
+            // Formal Suit
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.moveTo(120, 800);
+            ctx.quadraticCurveTo(140, 540, 245, 515);
+            ctx.lineTo(395, 515);
+            ctx.quadraticCurveTo(500, 540, 520, 800);
+            ctx.closePath();
+            ctx.fill();
+
+            // White Shirt Collar
+            ctx.fillStyle = '#f8fafc';
+            ctx.beginPath();
+            ctx.moveTo(260, 515);
+            ctx.lineTo(320, 650);
+            ctx.lineTo(380, 515);
+            ctx.closePath();
+            ctx.fill();
+
+            // Tie
+            ctx.fillStyle = '#0f766e';
+            ctx.beginPath();
+            ctx.moveTo(310, 535);
+            ctx.lineTo(330, 535);
+            ctx.lineTo(336, 660);
+            ctx.lineTo(320, 680);
+            ctx.lineTo(304, 660);
+            ctx.closePath();
+            ctx.fill();
+
+            // Neck
+            ctx.fillStyle = '#e0ac69';
+            ctx.fillRect(280, 440, 80, 95);
+
+            // Head
+            ctx.fillStyle = '#f1c27d';
+            ctx.beginPath();
+            ctx.ellipse(320, 330, 106, 136, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hair
+            ctx.fillStyle = '#1c1917';
+            ctx.beginPath();
+            ctx.ellipse(320, 260, 112, 95, 0, Math.PI, Math.PI * 2);
+            ctx.quadraticCurveTo(436, 300, 422, 330);
+            ctx.quadraticCurveTo(398, 248, 320, 248);
+            ctx.quadraticCurveTo(242, 248, 218, 330);
+            ctx.quadraticCurveTo(204, 300, 208, 260);
+            ctx.fill();
+
+            // Eyes & Features
+            ctx.fillStyle = '#1c1917';
+            ctx.beginPath();
+            ctx.arc(280, 320, 8, 0, Math.PI * 2);
+            ctx.arc(360, 320, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#1c1917';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(258, 300); ctx.quadraticCurveTo(280, 292, 302, 300);
+            ctx.moveTo(338, 300); ctx.quadraticCurveTo(360, 292, 382, 300);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#c68642';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(320, 320); ctx.lineTo(314, 368); ctx.lineTo(328, 372);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#9a3412';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(320, 396, 25, 0.15 * Math.PI, 0.85 * Math.PI);
+            ctx.stroke();
+
+            const img = new Image();
+            img.onload = () => {
+                state.rawImage = img;
+                state.maskCanvas = null;
+                state.upscaleFactor = 2;
+                updateUpscaleButtonsUI();
+                document.getElementById('upload-prompt').classList.add('hidden');
+                document.getElementById('step1-preview-wrapper').classList.remove('hidden');
+                document.getElementById('btn-next-1').disabled = false;
+                updateStep1Preview();
+                showToast('Foto contoh studio berhasil dimuat!', 'success');
+            };
+            img.src = c.toDataURL('image/png');
+        }
+
+        function setUpscaleFactor(factor) {
+            state.upscaleFactor = factor;
+            updateUpscaleButtonsUI();
+            updateStep1Preview();
+        }
+
+        function updateUpscaleButtonsUI() {
+            [1, 2, 4].forEach(f => {
+                const btn = document.getElementById(`upscale-btn-${f}`);
+                if (f === state.upscaleFactor) {
+                    btn.className = 'upscale-btn py-2.5 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-xs transition';
+                } else {
+                    btn.className = 'upscale-btn py-2.5 px-3 rounded-xl border border-slate-700 hover:border-emerald-500/60 text-slate-300 font-semibold text-xs transition';
+                }
+            });
+        }
+
+        function resetEnhancements() {
+            document.getElementById('slider-sharpness').value = 25;
+            document.getElementById('slider-brightness').value = 102;
+            document.getElementById('slider-contrast').value = 104;
+            document.getElementById('slider-saturation').value = 105;
+            updateStep1Preview();
+        }
+
+        function generateEnhancedCanvas() {
+            if (!state.rawImage) return null;
+
+            const sharpness = parseInt(document.getElementById('slider-sharpness').value, 10) / 100;
+            const brightness = document.getElementById('slider-brightness').value;
+            const contrast = document.getElementById('slider-contrast').value;
+            const saturation = document.getElementById('slider-saturation').value;
+
+            const maxDim = 3600;
+            let targetW = state.rawImage.width * state.upscaleFactor;
+            let targetH = state.rawImage.height * state.upscaleFactor;
+            if (Math.max(targetW, targetH) > maxDim) {
+                const ratio = maxDim / Math.max(targetW, targetH);
+                targetW = Math.round(targetW * ratio);
+                targetH = Math.round(targetH * ratio);
+            }
+
+            // Multi-step progressive bicubic scaling
+            let tempCanvas = document.createElement('canvas');
+            tempCanvas.width = state.rawImage.width;
+            tempCanvas.height = state.rawImage.height;
+            tempCanvas.getContext('2d').drawImage(state.rawImage, 0, 0);
+
+            while (tempCanvas.width < targetW * 0.75) {
+                const nextW = Math.min(targetW, tempCanvas.width * 2);
+                const nextH = Math.min(targetH, tempCanvas.height * 2);
+                const stepC = document.createElement('canvas');
+                stepC.width = nextW;
+                stepC.height = nextH;
+                const sCtx = stepC.getContext('2d');
+                sCtx.imageSmoothingEnabled = true;
+                sCtx.imageSmoothingQuality = 'high';
+                sCtx.drawImage(tempCanvas, 0, 0, nextW, nextH);
+                tempCanvas = stepC;
+            }
+
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = targetW;
+            outCanvas.height = targetH;
+            const ctx = outCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+            ctx.drawImage(tempCanvas, 0, 0, targetW, targetH);
+            ctx.filter = 'none';
+
+            if (sharpness > 0.02) {
+                applyUnsharpMask(ctx, targetW, targetH, sharpness * 0.65);
+            }
+
+            state.enhancedCanvas = outCanvas;
+            return outCanvas;
+        }
+
+        function applyUnsharpMask(ctx, w, h, amount) {
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+            const copy = new Uint8ClampedArray(data);
+            const stride = w * 4;
+
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const idx = y * stride + x * 4;
+                    for (let c = 0; c < 3; c++) {
+                        const center = copy[idx + c];
+                        const neighbors = (
+                            copy[idx - stride + c] +
+                            copy[idx + stride + c] +
+                            copy[idx - 4 + c] +
+                            copy[idx + 4 + c]
+                        ) * 0.25;
+                        const detail = center - neighbors;
+                        data[idx + c] = Math.min(255, Math.max(0, center + detail * amount));
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function updateStep1Preview() {
+            if (!state.rawImage) return;
+
+            document.getElementById('val-sharpness').textContent = document.getElementById('slider-sharpness').value + '%';
+            document.getElementById('val-brightness').textContent = document.getElementById('slider-brightness').value + '%';
+            document.getElementById('val-contrast').textContent = document.getElementById('slider-contrast').value + '%';
+            document.getElementById('val-saturation').textContent = document.getElementById('slider-saturation').value + '%';
+
+            const enhanced = generateEnhancedCanvas();
+            const previewCanvas = document.getElementById('step1-canvas');
+            previewCanvas.width = enhanced.width;
+            previewCanvas.height = enhanced.height;
+            previewCanvas.getContext('2d').drawImage(enhanced, 0, 0);
+
+            document.getElementById('img-dim-badge').textContent = `Resolusi: ${enhanced.width} × ${enhanced.height} px`;
+            document.getElementById('img-upscale-badge').textContent = state.upscaleFactor > 1 ? `Upscaled ${state.upscaleFactor}x HD` : 'Original 1x';
+        }
+
+        function commitStep1AndNext() {
+            if (!state.rawImage) return;
+            generateEnhancedCanvas();
+            initMaskCanvas();
+            goToStep(2);
+        }
+
+        // =========================================================================
+        // STEP 2: BACKGROUND REMOVAL (AI + SMART FLOOD FILL + MANUAL BRUSH)
+        // =========================================================================
+        function initMaskCanvas() {
+            const w = state.enhancedCanvas.width;
+            const h = state.enhancedCanvas.height;
+            const mask = document.createElement('canvas');
+            mask.width = w;
+            mask.height = h;
+            const mCtx = mask.getContext('2d');
+            mCtx.fillStyle = '#FFFFFF';
+            mCtx.fillRect(0, 0, w, h);
+            state.maskCanvas = mask;
+            state.maskHistory = [];
+            saveMaskSnapshot();
+        }
+
+        function saveMaskSnapshot() {
+            if (!state.maskCanvas) return;
+            if (state.maskHistory.length > 12) state.maskHistory.shift();
+            const snap = document.createElement('canvas');
+            snap.width = state.maskCanvas.width;
+            snap.height = state.maskCanvas.height;
+            snap.getContext('2d').drawImage(state.maskCanvas, 0, 0);
+            state.maskHistory.push(snap);
+        }
+
+        function undoMask() {
+            if (state.maskHistory.length <= 1) {
+                showToast('Tidak ada langkah sebelumnya untuk di-undo.', 'info');
+                return;
+            }
+            state.maskHistory.pop();
+            const prev = state.maskHistory[state.maskHistory.length - 1];
+            const mCtx = state.maskCanvas.getContext('2d');
+            mCtx.clearRect(0, 0, state.maskCanvas.width, state.maskCanvas.height);
+            mCtx.drawImage(prev, 0, 0);
+            renderStep2Composite();
+        }
+
+        function resetMask() {
+            initMaskCanvas();
+            renderStep2Composite();
+            showToast('Masker background dipulihkan ke awal.', 'info');
+        }
+
+        async function runAutoBackgroundRemoval() {
+            const overlay = document.getElementById('bg-loading-overlay');
+            const title = document.getElementById('bg-loading-title');
+            const desc = document.getElementById('bg-loading-desc');
+            overlay.classList.remove('hidden');
+            title.textContent = 'Memuat Model AI Pemotong Background...';
+            desc.textContent = 'Sedang memisahkan subjek dari latar belakang secara otomatis.';
+
+            try {
+                const module = await import('https://esm.sh/@imgly/background-removal@1.4.5');
+                const removeBackground = module.removeBackground || module.default;
+
+                const blob = await new Promise(res => state.enhancedCanvas.toBlob(res, 'image/png'));
+                title.textContent = 'AI Sedang Memproses Subjek...';
+                const resultBlob = await removeBackground(blob);
+                const resultUrl = URL.createObjectURL(resultBlob);
+
+                const cutImg = new Image();
+                cutImg.onload = () => {
+                    const w = state.maskCanvas.width;
+                    const h = state.maskCanvas.height;
+                    const tempC = document.createElement('canvas');
+                    tempC.width = w;
+                    tempC.height = h;
+                    const tCtx = tempC.getContext('2d');
+                    tCtx.drawImage(cutImg, 0, 0, w, h);
+
+                    const imgData = tCtx.getImageData(0, 0, w, h);
+                    const d = imgData.data;
+                    for (let i = 0; i < d.length; i += 4) {
+                        const alpha = d[i + 3];
+                        d[i] = 255;
+                        d[i + 1] = 255;
+                        d[i + 2] = 255;
+                        d[i + 3] = alpha;
+                    }
+                    const mCtx = state.maskCanvas.getContext('2d');
+                    mCtx.clearRect(0, 0, w, h);
+                    mCtx.putImageData(imgData, 0, 0);
+
+                    saveMaskSnapshot();
+                    renderStep2Composite();
+                    overlay.classList.add('hidden');
+                    URL.revokeObjectURL(resultUrl);
+                    showToast('Background berhasil dihapus dengan AI!', 'success');
+                };
+                cutImg.src = resultUrl;
+            } catch (err) {
+                console.warn('AI CDN fallback to Smart Edge Flood Fill:', err);
+                overlay.classList.add('hidden');
+                runSmartEdgeFloodFill();
+                showToast('Pemotong latar cerdas otomatis diterapkan.', 'info');
+            }
+        }
+
+        function runSmartEdgeFloodFill() {
+            const w = state.enhancedCanvas.width;
+            const h = state.enhancedCanvas.height;
+            const tolerance = Math.max(24, parseInt(document.getElementById('slider-brush-size').value, 10));
+
+            const samplePoints = [
+                [4, 4],
+                [w - 5, 4],
+                [Math.floor(w * 0.15), 4],
+                [Math.floor(w * 0.85), 4],
+                [4, Math.floor(h * 0.25)],
+                [w - 5, Math.floor(h * 0.25)]
+            ];
+
+            samplePoints.forEach(([sx, sy]) => {
+                floodFillEraseAt(sx, sy, tolerance);
+            });
+
+            saveMaskSnapshot();
+            renderStep2Composite();
+        }
+
+        function floodFillEraseAt(startX, startY, tolerance) {
+            const w = state.enhancedCanvas.width;
+            const h = state.enhancedCanvas.height;
+            const srcData = state.enhancedCanvas.getContext('2d').getImageData(0, 0, w, h).data;
+            const mCtx = state.maskCanvas.getContext('2d');
+            const maskImg = mCtx.getImageData(0, 0, w, h);
+            const mData = maskImg.data;
+
+            const sx = Math.max(0, Math.min(w - 1, Math.floor(startX)));
+            const sy = Math.max(0, Math.min(h - 1, Math.floor(startY)));
+            const startIdx = (sy * w + sx) * 4;
+
+            if (mData[startIdx + 3] === 0) return;
+
+            const targetR = srcData[startIdx];
+            const targetG = srcData[startIdx + 1];
+            const targetB = srcData[startIdx + 2];
+            const tolSq = (tolerance * 1.45) ** 2;
+
+            const visited = new Uint8Array(w * h);
+            const stack = [sx + sy * w];
+            visited[sx + sy * w] = 1;
+
+            while (stack.length > 0) {
+                const pos = stack.pop();
+                const idx = pos * 4;
+
+                const dr = srcData[idx] - targetR;
+                const dg = srcData[idx + 1] - targetG;
+                const db = srcData[idx + 2] - targetB;
+                const distSq = dr * dr + dg * dg + db * db;
+
+                if (distSq <= tolSq) {
+                    const ratio = distSq / tolSq;
+                    mData[idx + 3] = ratio > 0.72 ? Math.round(((ratio - 0.72) / 0.28) * 180) : 0;
+
+                    const x = pos % w;
+                    const y = (pos - x) / w;
+
+                    if (x > 0 && !visited[pos - 1]) { visited[pos - 1] = 1; stack.push(pos - 1); }
+                    if (x < w - 1 && !visited[pos + 1]) { visited[pos + 1] = 1; stack.push(pos + 1); }
+                    if (y > 0 && !visited[pos - w]) { visited[pos - w] = 1; stack.push(pos - w); }
+                    if (y < h - 1 && !visited[pos + w]) { visited[pos + w] = 1; stack.push(pos + w); }
+                }
+            }
+
+            mCtx.putImageData(maskImg, 0, 0);
+        }
+
+        function setBgColor(hex, label) {
+            state.bgColor = hex;
+            state.bgColorName = hex === 'transparent' ? 'Transparan' : `${label} (${hex.toUpperCase()})`;
+            document.getElementById('selected-bg-label').textContent = state.bgColorName;
+
+            document.querySelectorAll('.bg-swatch').forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-emerald-400');
+            });
+            renderStep2Composite();
+        }
+
+        function setBrushTool(tool) {
+            state.brushTool = tool;
+            ['magic', 'erase', 'restore'].forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (t === tool) {
+                    btn.className = 'tool-btn py-1.5 px-2 rounded-lg text-xs font-semibold bg-slate-800 text-emerald-400 shadow-sm';
+                } else {
+                    btn.className = 'tool-btn py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-400';
+                }
+            });
+        }
+
+        // =========================================================================
+        // STEP 2B: JAS & KEMEJA (HIGH-RES PROCEDURAL FORMAL ATTIRE ENGINE)
+        // =========================================================================
+        const ATTIRE_CATALOG = [
+            { id: 'none', name: 'Tanpa Jas (Asli)', cat: 'all', badge: 'Asli' },
+            { id: 'pria-jas-hitam-dasi-hitam', name: 'Jas Hitam + Dasi Hitam', cat: 'pria', badge: 'Pria • CPNS' },
+            { id: 'pria-jas-hitam-dasi-merah', name: 'Jas Hitam + Dasi Merah', cat: 'pria', badge: 'Pria • Resmi' },
+            { id: 'pria-jas-navy-dasi-biru', name: 'Jas Navy + Dasi Biru', cat: 'pria', badge: 'Pria • Kantor' },
+            { id: 'pria-kemeja-putih', name: 'Kemeja Putih Polos', cat: 'pria', badge: 'Pria • KTP/Kerja' },
+            { id: 'pria-batik-sogan', name: 'Batik Formal Sogan', cat: 'pria', badge: 'Pria • Batik' },
+            { id: 'wanita-blazer-hitam', name: 'Blazer Hitam + Kemeja', cat: 'wanita', badge: 'Wanita • Kantor' },
+            { id: 'wanita-blazer-hijab-hitam', name: 'Blazer + Hijab Hitam', cat: 'wanita', badge: 'Wanita • Hijab' },
+            { id: 'wanita-blazer-hijab-putih', name: 'Blazer + Hijab Putih', cat: 'wanita', badge: 'Wanita • Hijab' },
+            { id: 'wanita-kemeja-pita', name: 'Kemeja Putih + Pita', cat: 'wanita', badge: 'Wanita • Formal' },
+            { id: 'wanita-kebaya-batik', name: 'Kebaya & Selendang Batik', cat: 'wanita', badge: 'Wanita • Kebaya' }
+        ];
+
+        const attireRenderCache = {};
+
+        function getAttireCanvas(attireId) {
+            if (attireId === 'none') return null;
+            if (attireRenderCache[attireId]) return attireRenderCache[attireId];
+
+            const w = 1000;
+            const h = 860;
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+            const ctx = c.getContext('2d');
+
+            drawFormalAttireVector(ctx, w, h, attireId);
+            attireRenderCache[attireId] = c;
+            return c;
+        }
+
+        function drawFormalAttireVector(ctx, w, h, id) {
+            ctx.save();
+            ctx.clearRect(0, 0, w, h);
+
+            // Helper: realistic fabric gradient
+            const makeSuitGrad = (c1, c2, c3) => {
+                const g = ctx.createLinearGradient(0, 120, w, h);
+                g.addColorStop(0, c1);
+                g.addColorStop(0.5, c2);
+                g.addColorStop(1, c3);
+                return g;
+            };
+
+            const drawShouldersBase = (fillStyle, strokeStyle = 'rgba(0,0,0,0.35)') => {
+                ctx.fillStyle = fillStyle;
+                ctx.strokeStyle = strokeStyle;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(45, h);
+                ctx.quadraticCurveTo(55, 345, 165, 290);
+                ctx.quadraticCurveTo(285, 240, 385, 215);
+                ctx.lineTo(615, 215);
+                ctx.quadraticCurveTo(715, 240, 835, 290);
+                ctx.quadraticCurveTo(945, 345, 955, h);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Subtle shoulder seam & sleeve folds
+                ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(215, 275);
+                ctx.quadraticCurveTo(230, 520, 210, h);
+                ctx.moveTo(785, 275);
+                ctx.quadraticCurveTo(770, 520, 790, h);
+                ctx.stroke();
+            };
+
+            const drawWhiteInnerShirt = (vDepth = 560) => {
+                const shirtGrad = ctx.createLinearGradient(380, 210, 620, vDepth);
+                shirtGrad.addColorStop(0, '#f8fafc');
+                shirtGrad.addColorStop(0.5, '#ffffff');
+                shirtGrad.addColorStop(1, '#e2e8f0');
+
+                ctx.fillStyle = shirtGrad;
+                ctx.beginPath();
+                ctx.moveTo(385, 215);
+                ctx.lineTo(615, 215);
+                ctx.lineTo(645, vDepth);
+                ctx.lineTo(355, vDepth);
+                ctx.closePath();
+                ctx.fill();
+
+                // Neck shadow under chin
+                const neckShadow = ctx.createRadialGradient(500, 225, 20, 500, 255, 130);
+                neckShadow.addColorStop(0, 'rgba(15, 23, 42, 0.26)');
+                neckShadow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+                ctx.fillStyle = neckShadow;
+                ctx.beginPath();
+                ctx.ellipse(500, 240, 115, 55, 0, 0, Math.PI);
+                ctx.fill();
+            };
+
+            const drawShirtCollar = () => {
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 2.5;
+
+                // Left collar wing
+                ctx.beginPath();
+                ctx.moveTo(395, 208);
+                ctx.lineTo(500, 282);
+                ctx.lineTo(445, 342);
+                ctx.lineTo(378, 255);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Right collar wing
+                ctx.beginPath();
+                ctx.moveTo(605, 208);
+                ctx.lineTo(500, 282);
+                ctx.lineTo(555, 342);
+                ctx.lineTo(622, 255);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            };
+
+            const drawNecktie = (cTop, cMid, cBot) => {
+                const tieGrad = ctx.createLinearGradient(470, 275, 530, 620);
+                tieGrad.addColorStop(0, cTop);
+                tieGrad.addColorStop(0.45, cMid);
+                tieGrad.addColorStop(1, cBot);
+
+                // Tie blade
+                ctx.fillStyle = tieGrad;
+                ctx.beginPath();
+                ctx.moveTo(484, 315);
+                ctx.lineTo(516, 315);
+                ctx.lineTo(536, 565);
+                ctx.lineTo(500, 615);
+                ctx.lineTo(464, 565);
+                ctx.closePath();
+                ctx.fill();
+
+                // Subtle diagonal silk texture lines
+                ctx.save();
+                ctx.clip();
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                ctx.lineWidth = 3;
+                for (let y = 300; y < 640; y += 18) {
+                    ctx.beginPath();
+                    ctx.moveTo(450, y);
+                    ctx.lineTo(550, y - 35);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Tie knot
+                ctx.fillStyle = cTop;
+                ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(476, 276);
+                ctx.lineTo(524, 276);
+                ctx.lineTo(516, 322);
+                ctx.lineTo(484, 322);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            };
+
+            const drawSuitLapels = (lapelFill, lapelEdge) => {
+                ctx.fillStyle = lapelFill;
+                ctx.strokeStyle = lapelEdge;
+                ctx.lineWidth = 3;
+
+                // Left notched lapel
+                ctx.beginPath();
+                ctx.moveTo(385, 215);
+                ctx.lineTo(318, 355);
+                ctx.lineTo(368, 382);
+                ctx.lineTo(335, 422);
+                ctx.lineTo(500, 645);
+                ctx.lineTo(452, 410);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Right notched lapel
+                ctx.beginPath();
+                ctx.moveTo(615, 215);
+                ctx.lineTo(682, 355);
+                ctx.lineTo(632, 382);
+                ctx.lineTo(665, 422);
+                ctx.lineTo(500, 645);
+                ctx.lineTo(548, 410);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Lower jacket closure V-overlap
+                ctx.fillStyle = lapelFill;
+                ctx.beginPath();
+                ctx.moveTo(500, 635);
+                ctx.lineTo(455, h);
+                ctx.lineTo(545, h);
+                ctx.closePath();
+                ctx.fill();
+
+                // Suit button
+                ctx.fillStyle = '#090d16';
+                ctx.beginPath();
+                ctx.arc(500, 685, 11, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            };
+
+            if (id.startsWith('pria-jas-hitam')) {
+                const suitGrad = makeSuitGrad('#1e293b', '#0f172a', '#090d16');
+                drawShouldersBase(suitGrad);
+                drawWhiteInnerShirt(640);
+                if (id.endsWith('dasi-merah')) {
+                    drawNecktie('#b91c1c', '#991b1b', '#7f1d1d');
+                } else {
+                    drawNecktie('#1e293b', '#0f172a', '#020617');
+                }
+                drawShirtCollar();
+                drawSuitLapels('#162032', '#334155');
+            } else if (id === 'pria-jas-navy-dasi-biru') {
+                const navyGrad = makeSuitGrad('#1e3a8a', '#172554', '#0f172a');
+                drawShouldersBase(navyGrad);
+                drawWhiteInnerShirt(640);
+                drawNecktie('#1d4ed8', '#1e40af', '#172554');
+                drawShirtCollar();
+                drawSuitLapels('#1e3a8a', '#3b82f6');
+            } else if (id === 'pria-kemeja-putih') {
+                const whiteGrad = makeSuitGrad('#f8fafc', '#f1f5f9', '#cbd5e1');
+                drawShouldersBase(whiteGrad, '#94a3b8');
+                // Center placket
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fillRect(484, 275, 32, h - 275);
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.strokeRect(484, 275, 32, h - 275);
+                // Buttons
+                ctx.fillStyle = '#94a3b8';
+                [350, 445, 540, 635, 730].forEach(by => {
+                    ctx.beginPath();
+                    ctx.arc(500, by, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                // Left chest pocket
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(615, 430, 125, 140);
+                drawShirtCollar();
+            } else if (id === 'pria-batik-sogan') {
+                const batikGrad = makeSuitGrad('#451a03', '#291002', '#1c0a00');
+                drawShouldersBase(batikGrad, '#78350f');
+                // Traditional Sogan gold-amber geometric motif
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(45, h);
+                ctx.quadraticCurveTo(55, 345, 165, 290);
+                ctx.quadraticCurveTo(285, 240, 385, 215);
+                ctx.lineTo(615, 215);
+                ctx.quadraticCurveTo(715, 240, 835, 290);
+                ctx.quadraticCurveTo(945, 345, 955, h);
+                ctx.closePath();
+                ctx.clip();
+
+                ctx.strokeStyle = 'rgba(217, 119, 6, 0.38)';
+                ctx.fillStyle = 'rgba(245, 158, 11, 0.22)';
+                ctx.lineWidth = 2.5;
+                for (let gy = 220; gy < h; gy += 56) {
+                    for (let gx = 40; gx < w; gx += 56) {
+                        ctx.beginPath();
+                        ctx.moveTo(gx, gy - 22);
+                        ctx.lineTo(gx + 22, gy);
+                        ctx.lineTo(gx, gy + 22);
+                        ctx.lineTo(gx - 22, gy);
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(gx, gy, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                // Center batik placket
+                ctx.fillStyle = '#3b1502';
+                ctx.fillRect(482, 260, 36, h - 260);
+                ctx.restore();
+
+                // Batik Collar
+                ctx.fillStyle = '#5c2305';
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(395, 208); ctx.lineTo(500, 278); ctx.lineTo(445, 335); ctx.lineTo(378, 255); ctx.closePath();
+                ctx.fill(); ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(605, 208); ctx.lineTo(500, 278); ctx.lineTo(555, 335); ctx.lineTo(622, 255); ctx.closePath();
+                ctx.fill(); ctx.stroke();
+            } else if (id === 'wanita-blazer-hitam') {
+                const blazerGrad = makeSuitGrad('#1e293b', '#0f172a', '#090d16');
+                drawShouldersBase(blazerGrad);
+                drawWhiteInnerShirt(580);
+                // Soft rounded feminine blazer lapels
+                ctx.fillStyle = '#162032';
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(385, 215);
+                ctx.quadraticCurveTo(335, 370, 500, 585);
+                ctx.quadraticCurveTo(445, 380, 410, 220);
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(615, 215);
+                ctx.quadraticCurveTo(665, 370, 500, 585);
+                ctx.quadraticCurveTo(555, 380, 590, 220);
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
+            } else if (id.startsWith('wanita-blazer-hijab')) {
+                const blazerGrad = makeSuitGrad('#1e293b', '#0f172a', '#090d16');
+                drawShouldersBase(blazerGrad);
+
+                const isWhiteHijab = id.endsWith('putih');
+                const hijabGrad = ctx.createLinearGradient(320, 180, 680, 560);
+                if (isWhiteHijab) {
+                    hijabGrad.addColorStop(0, '#ffffff');
+                    hijabGrad.addColorStop(0.6, '#f1f5f9');
+                    hijabGrad.addColorStop(1, '#cbd5e1');
+                } else {
+                    hijabGrad.addColorStop(0, '#1e293b');
+                    hijabGrad.addColorStop(0.6, '#0f172a');
+                    hijabGrad.addColorStop(1, '#020617');
+                }
+
+                // Neat hijab drape covering neck & chest inside blazer
+                ctx.fillStyle = hijabGrad;
+                ctx.strokeStyle = isWhiteHijab ? '#94a3b8' : '#334155';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(355, 195);
+                ctx.quadraticCurveTo(500, 235, 645, 195);
+                ctx.quadraticCurveTo(685, 370, 500, 575);
+                ctx.quadraticCurveTo(315, 370, 355, 195);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Hijab drape fold lines
+                ctx.strokeStyle = isWhiteHijab ? 'rgba(100,116,139,0.28)' : 'rgba(255,255,255,0.12)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(380, 255);
+                ctx.quadraticCurveTo(500, 335, 620, 255);
+                ctx.moveTo(395, 325);
+                ctx.quadraticCurveTo(500, 415, 605, 325);
+                ctx.stroke();
+
+                // Blazer lapels framing the hijab
+                ctx.fillStyle = '#111827';
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(365, 225);
+                ctx.quadraticCurveTo(320, 390, 500, 600);
+                ctx.quadraticCurveTo(420, 405, 385, 230);
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(635, 225);
+                ctx.quadraticCurveTo(680, 390, 500, 600);
+                ctx.quadraticCurveTo(580, 405, 615, 230);
+                ctx.closePath();
+                ctx.fill(); ctx.stroke();
+            } else if (id === 'wanita-kemeja-pita') {
+                const whiteGrad = makeSuitGrad('#ffffff', '#f8fafc', '#e2e8f0');
+                drawShouldersBase(whiteGrad, '#94a3b8');
+                drawShirtCollar();
+                // Navy formal ribbon bow at collar
+                ctx.fillStyle = '#1e3a8a';
+                ctx.beginPath();
+                ctx.moveTo(500, 285);
+                ctx.lineTo(445, 260);
+                ctx.lineTo(455, 315);
+                ctx.closePath();
+                ctx.moveTo(500, 285);
+                ctx.lineTo(555, 260);
+                ctx.lineTo(545, 315);
+                ctx.closePath();
+                ctx.fill();
+                // Ribbon tails
+                ctx.beginPath();
+                ctx.moveTo(492, 295); ctx.lineTo(465, 420); ctx.lineTo(488, 410); ctx.closePath();
+                ctx.moveTo(508, 295); ctx.lineTo(535, 420); ctx.lineTo(512, 410); ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#172554';
+                ctx.fillRect(488, 275, 24, 24);
+            } else if (id === 'wanita-kebaya-batik') {
+                // Maroon velvet kebaya + gold embroidered selendang
+                const kebayaGrad = makeSuitGrad('#7f1d1d', '#581212', '#3b0909');
+                drawShouldersBase(kebayaGrad, '#991b1b');
+
+                // V-neck kutubaru neckline
+                ctx.fillStyle = '#450a0a';
+                ctx.beginPath();
+                ctx.moveTo(410, 215);
+                ctx.lineTo(590, 215);
+                ctx.lineTo(555, 520);
+                ctx.lineTo(445, 520);
+                ctx.closePath();
+                ctx.fill();
+
+                // Gold brocade trim
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(452, 245, 96, 275);
+
+                // Batik Selendang across left shoulder
+                ctx.fillStyle = '#92400e';
+                ctx.beginPath();
+                ctx.moveTo(225, 265);
+                ctx.lineTo(355, 225);
+                ctx.lineTo(445, h);
+                ctx.lineTo(275, h);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function switchStep2SubTab(tab) {
+            state.step2SubTab = tab;
+            const bgPanel = document.getElementById('step2-panel-bg');
+            const attirePanel = document.getElementById('step2-panel-attire');
+            const bgBtn = document.getElementById('subtab-btn-bg');
+            const attireBtn = document.getElementById('subtab-btn-attire');
+            const modeBadge = document.getElementById('step2-canvas-mode-badge');
+            const helperText = document.getElementById('step2-helper-text');
+
+            if (tab === 'bg') {
+                bgPanel.classList.remove('hidden');
+                attirePanel.classList.add('hidden');
+                bgBtn.className = 'py-2 px-3 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 shadow-sm flex items-center justify-center gap-1.5 transition';
+                attireBtn.className = 'py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition';
+                modeBadge.classList.add('hidden');
+                helperText.innerHTML = 'Klik <strong class="text-emerald-400">"Hapus Background Otomatis (AI)"</strong> atau sapukan kuas untuk merapikan tepi.';
+            } else {
+                bgPanel.classList.add('hidden');
+                attirePanel.classList.remove('hidden');
+                attireBtn.className = 'py-2 px-3 rounded-lg text-xs font-bold bg-slate-800 text-amber-300 shadow-sm flex items-center justify-center gap-1.5 transition';
+                bgBtn.className = 'py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition';
+                if (state.selectedAttireId !== 'none') {
+                    modeBadge.classList.remove('hidden');
+                }
+                helperText.innerHTML = 'Pilih template <strong class="text-amber-300">Jas / Kemeja</strong> lalu seret langsung di kanvas untuk menyesuaikan bahu.';
+            }
+            lucide.createIcons();
+        }
+
+        function setAttireCategory(cat) {
+            state.attireCategory = cat;
+            ['all', 'pria', 'wanita'].forEach(c => {
+                const btn = document.getElementById(`attire-cat-${c}`);
+                if (c === cat) {
+                    btn.className = 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-amber-300';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-white';
+                }
+            });
+            renderAttireCatalog();
+        }
+
+        function renderAttireCatalog() {
+            const grid = document.getElementById('attire-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            const filtered = ATTIRE_CATALOG.filter(item => {
+                if (state.attireCategory === 'all') return true;
+                return item.cat === 'all' || item.cat === state.attireCategory;
+            });
+
+            filtered.forEach(item => {
+                const isSelected = state.selectedAttireId === item.id;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectAttire(item.id);
+                btn.className = `p-2 rounded-xl border text-left flex flex-col items-center justify-between transition ${
+                    isSelected
+                        ? 'bg-amber-500/15 border-amber-400 ring-1 ring-amber-400 shadow-md'
+                        : 'bg-slate-950/90 border-slate-800 hover:border-slate-600'
+                }`;
+
+                let thumbHtml = '';
+                if (item.id === 'none') {
+                    thumbHtml = `<div class="w-full h-14 rounded-lg bg-slate-900 border border-dashed border-slate-700 flex items-center justify-center text-slate-400 text-[11px] font-semibold">Baju Asli</div>`;
+                } else {
+                    const thumbC = getAttireCanvas(item.id);
+                    const thumbUrl = thumbC.toDataURL('image/png');
+                    thumbHtml = `<div class="w-full h-14 rounded-lg bg-slate-800/80 flex items-center justify-center overflow-hidden p-1"><img src="${thumbUrl}" alt="${item.name}" class="max-h-full max-w-full object-contain"></div>`;
+                }
+
+                btn.innerHTML = `
+                    ${thumbHtml}
+                    <div class="w-full mt-1.5">
+                        <div class="text-[10px] font-bold text-white leading-tight line-clamp-2">${item.name}</div>
+                        <div class="text-[9px] text-slate-400 mt-0.5">${item.badge}</div>
+                    </div>
+                `;
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectAttire(attireId) {
+            state.selectedAttireId = attireId;
+            const dot = document.getElementById('attire-active-dot');
+            const modeBadge = document.getElementById('step2-canvas-mode-badge');
+
+            if (attireId === 'none') {
+                dot.classList.add('hidden');
+                modeBadge.classList.add('hidden');
+            } else {
+                dot.classList.remove('hidden');
+                if (state.step2SubTab === 'attire') {
+                    modeBadge.classList.remove('hidden');
+                }
+            }
+
+            renderAttireCatalog();
+            renderStep2Composite();
+        }
+
+        function updateAttireTransformFromSliders() {
+            const t = state.attireTransform;
+            t.xPct = parseFloat(document.getElementById('slider-attire-x').value);
+            t.yPct = parseFloat(document.getElementById('slider-attire-y').value);
+            t.scaleX = parseInt(document.getElementById('slider-attire-scaleX').value, 10) / 100;
+            t.scaleY = parseInt(document.getElementById('slider-attire-scaleY').value, 10) / 100;
+            t.rotation = parseFloat(document.getElementById('slider-attire-rot').value);
+            t.brightness = parseInt(document.getElementById('slider-attire-bright').value, 10);
+
+            document.getElementById('val-attire-x').textContent = t.xPct + '%';
+            document.getElementById('val-attire-y').textContent = t.yPct + '%';
+            document.getElementById('val-attire-scaleX').textContent = Math.round(t.scaleX * 100) + '%';
+            document.getElementById('val-attire-scaleY').textContent = Math.round(t.scaleY * 100) + '%';
+            document.getElementById('val-attire-rot').textContent = t.rotation + '°';
+            document.getElementById('val-attire-bright').textContent = t.brightness + '%';
+
+            renderStep2Composite();
+        }
+
+        function resetAttireTransform(rerender = true) {
+            state.attireTransform = {
+                xPct: 0,
+                yPct: 18,
+                scaleX: 0.92,
+                scaleY: 0.92,
+                rotation: 0,
+                brightness: 100
+            };
+            const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+            setVal('slider-attire-x', 0);
+            setVal('slider-attire-y', 18);
+            setVal('slider-attire-scaleX', 92);
+            setVal('slider-attire-scaleY', 92);
+            setVal('slider-attire-rot', 0);
+            setVal('slider-attire-bright', 100);
+
+            if (rerender) updateAttireTransformFromSliders();
+        }
+
+        // Automatically erase original shirt/shoulders below the selected collar height
+        function autoCleanBelowNeck() {
+            if (!state.maskCanvas || state.selectedAttireId === 'none') {
+                showToast('Pilih template Jas atau Kemeja terlebih dahulu!', 'warning');
+                return;
+            }
+            const w = state.maskCanvas.width;
+            const h = state.maskCanvas.height;
+            const t = state.attireTransform;
+            const attireCanvas = getAttireCanvas(state.selectedAttireId);
+
+            const drawW = w * t.scaleX;
+            const drawH = (attireCanvas.height / attireCanvas.width) * drawW * (t.scaleY / t.scaleX);
+            const centerX = w * 0.5 + (t.xPct / 100) * w;
+            const topY = h * 0.36 + (t.yPct / 100) * h;
+
+            // Collar opening sits roughly 26% down from top of attire canvas
+            const collarCutY = topY + drawH * 0.27;
+            const neckHalfW = drawW * 0.13;
+
+            const mCtx = state.maskCanvas.getContext('2d');
+            mCtx.save();
+            mCtx.globalCompositeOperation = 'destination-out';
+            mCtx.fillStyle = 'rgba(0,0,0,1)';
+            mCtx.beginPath();
+            mCtx.moveTo(0, collarCutY + drawH * 0.04);
+            mCtx.lineTo(centerX - neckHalfW, collarCutY);
+            mCtx.quadraticCurveTo(centerX, collarCutY + drawH * 0.05, centerX + neckHalfW, collarCutY);
+            mCtx.lineTo(w, collarCutY + drawH * 0.04);
+            mCtx.lineTo(w, h);
+            mCtx.lineTo(0, h);
+            mCtx.closePath();
+            mCtx.fill();
+            mCtx.restore();
+
+            saveMaskSnapshot();
+            renderStep2Composite();
+            showToast('Area baju asli di bawah kerah berhasil dibersihkan!', 'success');
+        }
+
+        function setupStep2Events() {
+            const canvas = document.getElementById('step2-canvas');
+
+            const getCanvasCoords = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: ((clientX - rect.left) / rect.width) * canvas.width,
+                    y: ((clientY - rect.top) / rect.height) * canvas.height
+                };
+            };
+
+            const applyBrushAt = (x, y) => {
+                const size = parseInt(document.getElementById('slider-brush-size').value, 10);
+                const radius = (size / 2) * (canvas.width / 500);
+                const mCtx = state.maskCanvas.getContext('2d');
+                mCtx.save();
+                if (state.brushTool === 'erase') {
+                    mCtx.globalCompositeOperation = 'destination-out';
+                    mCtx.fillStyle = 'rgba(0,0,0,1)';
+                } else {
+                    mCtx.globalCompositeOperation = 'source-over';
+                    mCtx.fillStyle = '#FFFFFF';
+                }
+                mCtx.beginPath();
+                mCtx.arc(x, y, radius, 0, Math.PI * 2);
+                mCtx.fill();
+                mCtx.restore();
+                renderStep2Composite();
+            };
+
+            const onPointerDown = (e) => {
+                if (!state.enhancedCanvas) return;
+                e.preventDefault();
+                const { x, y } = getCanvasCoords(e);
+
+                // If in Jas & Kemeja tab with an active attire selected, drag attire position
+                if (state.step2SubTab === 'attire' && state.selectedAttireId !== 'none') {
+                    state.isDraggingAttire = true;
+                    state.attireDragStartX = x;
+                    state.attireDragStartY = y;
+                    state.attireStartXPct = state.attireTransform.xPct;
+                    state.attireStartYPct = state.attireTransform.yPct;
+                    return;
+                }
+
+                if (state.brushTool === 'magic') {
+                    const tol = parseInt(document.getElementById('slider-brush-size').value, 10);
+                    floodFillEraseAt(x, y, tol);
+                    saveMaskSnapshot();
+                    renderStep2Composite();
+                } else {
+                    state.isDrawingMask = true;
+                    applyBrushAt(x, y);
+                }
+            };
+
+            const onPointerMove = (e) => {
+                if (state.isDraggingAttire) {
+                    e.preventDefault();
+                    const { x, y } = getCanvasCoords(e);
+                    const dxPct = ((x - state.attireDragStartX) / canvas.width) * 100;
+                    const dyPct = ((y - state.attireDragStartY) / canvas.height) * 100;
+
+                    state.attireTransform.xPct = Math.max(-40, Math.min(40, Math.round((state.attireStartXPct + dxPct) * 2) / 2));
+                    state.attireTransform.yPct = Math.max(-35, Math.min(55, Math.round((state.attireStartYPct + dyPct) * 2) / 2));
+
+                    document.getElementById('slider-attire-x').value = state.attireTransform.xPct;
+                    document.getElementById('slider-attire-y').value = state.attireTransform.yPct;
+                    document.getElementById('val-attire-x').textContent = state.attireTransform.xPct + '%';
+                    document.getElementById('val-attire-y').textContent = state.attireTransform.yPct + '%';
+                    renderStep2Composite();
+                    return;
+                }
+
+                if (!state.isDrawingMask) return;
+                e.preventDefault();
+                const { x, y } = getCanvasCoords(e);
+                applyBrushAt(x, y);
+            };
+
+            const onPointerUp = () => {
+                if (state.isDraggingAttire) {
+                    state.isDraggingAttire = false;
+                }
+                if (state.isDrawingMask) {
+                    state.isDrawingMask = false;
+                    saveMaskSnapshot();
+                }
+            };
+
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('mouseup', onPointerUp);
+
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            window.addEventListener('touchend', onPointerUp);
+        }
+
+        function generateCompositedCanvas() {
+            const w = state.enhancedCanvas.width;
+            const h = state.enhancedCanvas.height;
+            const feather = parseFloat(document.getElementById('slider-feather').value);
+
+            const subjectCanvas = document.createElement('canvas');
+            subjectCanvas.width = w;
+            subjectCanvas.height = h;
+            const sCtx = subjectCanvas.getContext('2d');
+
+            if (feather > 0) {
+                sCtx.filter = `blur(${feather}px)`;
+            }
+            sCtx.drawImage(state.maskCanvas, 0, 0);
+            sCtx.filter = 'none';
+            sCtx.globalCompositeOperation = 'source-in';
+            sCtx.drawImage(state.enhancedCanvas, 0, 0);
+
+            const finalC = document.createElement('canvas');
+            finalC.width = w;
+            finalC.height = h;
+            const fCtx = finalC.getContext('2d');
+
+            if (state.bgColor !== 'transparent') {
+                fCtx.fillStyle = state.bgColor;
+                fCtx.fillRect(0, 0, w, h);
+            }
+            fCtx.drawImage(subjectCanvas, 0, 0);
+
+            // Render Selected Formal Attire (Jas & Kemeja) on top of shoulders
+            if (state.selectedAttireId && state.selectedAttireId !== 'none') {
+                const attireCanvas = getAttireCanvas(state.selectedAttireId);
+                if (attireCanvas) {
+                    const t = state.attireTransform;
+                    const drawW = w * t.scaleX;
+                    const drawH = (attireCanvas.height / attireCanvas.width) * drawW * (t.scaleY / t.scaleX);
+                    const centerX = w * 0.5 + (t.xPct / 100) * w;
+                    const topY = h * 0.36 + (t.yPct / 100) * h;
+
+                    fCtx.save();
+                    fCtx.translate(centerX, topY + drawH * 0.5);
+                    fCtx.rotate((t.rotation * Math.PI) / 180);
+                    fCtx.filter = `brightness(${t.brightness}%)`;
+                    fCtx.drawImage(attireCanvas, -drawW / 2, -drawH / 2, drawW, drawH);
+                    fCtx.restore();
+                }
+            }
+
+            state.compositedCanvas = finalC;
+            return finalC;
+        }
+
+        function renderStep2Composite() {
+            if (!state.enhancedCanvas || !state.maskCanvas) return;
+            const comp = generateCompositedCanvas();
+            const preview = document.getElementById('step2-canvas');
+            preview.width = comp.width;
+            preview.height = comp.height;
+            const ctx = preview.getContext('2d');
+            ctx.clearRect(0, 0, preview.width, preview.height);
+            ctx.drawImage(comp, 0, 0);
+        }
+
+        function commitStep2AndNext() {
+            generateCompositedCanvas();
+            // Reset per-size crop transforms cleanly for the new photo
+            Object.values(state.sizes).forEach(sz => {
+                sz.zoom = 1.0;
+                sz.rotation = 0;
+                sz.offsetX = 0;
+                sz.offsetY = 0;
+            });
+            setActiveCropSize('3x4');
+            goToStep(3);
+        }
+
+        // =========================================================================
+        // STEP 3: MULTI-CROP & JUMLAH LEMBAR PER UKURAN (MULTI-SIZE SELECTION)
+        // =========================================================================
+        function renderMultiSizeCards() {
+            const container = document.getElementById('multi-size-cards');
+            container.innerHTML = '';
+
+            let activeCount = 0;
+            let totalSheets = 0;
+
+            Object.values(state.sizes).forEach(sz => {
+                if (sz.enabled && sz.qty > 0) {
+                    activeCount++;
+                    totalSheets += sz.qty;
+                }
+
+                const isCurrentlyCropping = state.activeCropKey === sz.key;
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-xl border transition-all ${
+                    sz.enabled
+                        ? isCurrentlyCropping
+                            ? 'bg-emerald-950/25 border-emerald-500 shadow-md shadow-emerald-500/10'
+                            : 'bg-slate-950/90 border-slate-700'
+                        : 'bg-slate-950/40 border-slate-800/80 opacity-70'
+                }`;
+
+                const customDimensionInputs = sz.key === 'custom' ? `
+                    <div class="mt-2.5 pt-2.5 border-t border-slate-800/80 flex items-center gap-2">
+                        <span class="text-[11px] text-slate-400">Ukuran (cm):</span>
+                        <input type="number" value="${sz.wCm}" step="0.1" min="1" max="20" onchange="updateCustomDimensions(this.value, null)" class="w-16 px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-bold text-center text-white">
+                        <span class="text-xs text-slate-500">×</span>
+                        <input type="number" value="${sz.hCm}" step="0.1" min="1" max="28" onchange="updateCustomDimensions(null, this.value)" class="w-16 px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-bold text-center text-white">
+                        <span class="text-[11px] text-slate-400">cm</span>
+                    </div>
+                ` : '';
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <!-- Checkbox & Title -->
+                        <label class="flex items-center gap-3 cursor-pointer select-none">
+                            <input type="checkbox" ${sz.enabled ? 'checked' : ''} onchange="toggleSizeEnabled('${sz.key}', this.checked)" class="w-4 h-4 rounded accent-emerald-500 cursor-pointer">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-sm text-white">${sz.title}</span>
+                                    ${isCurrentlyCropping ? '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">Preview Aktif</span>' : ''}
+                                </div>
+                                <div class="text-[11px] text-slate-400">${sz.subtitle}</div>
+                            </div>
+                        </label>
+
+                        <!-- Atur Crop Button -->
+                        <button type="button" onclick="setActiveCropSize('${sz.key}')" class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition ${
+                            isCurrentlyCropping
+                                ? 'bg-emerald-500 text-slate-950 font-bold'
+                                : 'bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700'
+                        }">
+                            <i data-lucide="crop" class="w-3 h-3"></i>
+                            <span>Atur Crop</span>
+                        </button>
+                    </div>
+
+                    <!-- Quantity Stepper & Quick Preset Chips -->
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-800/70">
+                        <div class="flex items-center gap-1">
+                            <span class="text-[11px] text-slate-400 mr-1">Cepat:</span>
+                            ${[2, 4, 6, 10].map(n => `
+                                <button type="button" onclick="setSizeQty('${sz.key}', ${n})" class="px-2 py-1 rounded-md text-[11px] font-semibold transition ${
+                                    sz.enabled && sz.qty === n
+                                        ? 'bg-cyan-500 text-slate-950 font-bold'
+                                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                                }">${n} lbr</button>
+                            `).join('')}
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="adjustSizeQty('${sz.key}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold text-sm text-white">-</button>
+                            <input type="number" value="${sz.qty}" min="0" max="60" onchange="setSizeQty('${sz.key}', parseInt(this.value, 10) || 0)" class="w-12 text-center font-bold text-xs bg-slate-900 border border-slate-700 rounded-lg py-1.5 text-white">
+                            <button type="button" onclick="adjustSizeQty('${sz.key}', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold text-sm text-white">+</button>
+                            <span class="text-[11px] text-slate-400 ml-0.5">lbr</span>
+                        </div>
+                    </div>
+                    ${customDimensionInputs}
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('step3-total-summary').textContent = `${activeCount} ukuran aktif (${totalSheets} lembar total)`;
+            lucide.createIcons();
+        }
+
+        function toggleSizeEnabled(key, isChecked) {
+            state.sizes[key].enabled = isChecked;
+            if (isChecked && state.sizes[key].qty === 0) {
+                state.sizes[key].qty = 2;
+            }
+            if (isChecked) {
+                setActiveCropSize(key);
+            } else {
+                renderMultiSizeCards();
+            }
+        }
+
+        function setSizeQty(key, qty) {
+            const cleanQty = Math.max(0, Math.min(80, qty));
+            state.sizes[key].qty = cleanQty;
+            state.sizes[key].enabled = cleanQty > 0;
+            renderMultiSizeCards();
+        }
+
+        function adjustSizeQty(key, delta) {
+            setSizeQty(key, state.sizes[key].qty + delta);
+        }
+
+        function updateCustomDimensions(wVal, hVal) {
+            const custom = state.sizes.custom;
+            if (wVal !== null) custom.wCm = Math.max(1, Math.min(20, parseFloat(wVal) || 5.0));
+            if (hVal !== null) custom.hCm = Math.max(1, Math.min(28, parseFloat(hVal) || 5.0));
+            custom.title = `Ukuran Kustom (${custom.wCm}×${custom.hCm} cm)`;
+            setActiveCropSize('custom');
+        }
+
+        function selectAllStandardSizes() {
+            state.sizes['2x3'].enabled = true;
+            if (state.sizes['2x3'].qty === 0) state.sizes['2x3'].qty = 4;
+            state.sizes['3x4'].enabled = true;
+            if (state.sizes['3x4'].qty === 0) state.sizes['3x4'].qty = 4;
+            state.sizes['4x6'].enabled = true;
+            if (state.sizes['4x6'].qty === 0) state.sizes['4x6'].qty = 2;
+            renderMultiSizeCards();
+            showToast('Paket lengkap (2×3, 3×4, dan 4×6) diaktifkan!', 'success');
+        }
+
+        function setActiveCropSize(key) {
+            state.activeCropKey = key;
+            const sz = state.sizes[key];
+            document.getElementById('active-crop-title').textContent = `${sz.title} (${sz.wCm} × ${sz.hCm} cm)`;
+            document.getElementById('slider-crop-zoom').value = Math.round(sz.zoom * 100);
+            document.getElementById('slider-crop-rotate').value = sz.rotation;
+            document.getElementById('val-crop-zoom').textContent = Math.round(sz.zoom * 100) + '%';
+            document.getElementById('val-crop-rotate').textContent = sz.rotation + '°';
+
+            renderMultiSizeCards();
+            renderStep3Cropper();
+        }
+
+        function updateActiveCropTransform() {
+            const sz = state.sizes[state.activeCropKey];
+            const zoomPct = parseInt(document.getElementById('slider-crop-zoom').value, 10);
+            const rotDeg = parseFloat(document.getElementById('slider-crop-rotate').value);
+            sz.zoom = zoomPct / 100;
+            sz.rotation = rotDeg;
+
+            document.getElementById('val-crop-zoom').textContent = zoomPct + '%';
+            document.getElementById('val-crop-rotate').textContent = rotDeg + '°';
+            renderStep3Cropper();
+        }
+
+        function resetActiveCropTransform() {
+            const sz = state.sizes[state.activeCropKey];
+            sz.zoom = 1.0;
+            sz.rotation = 0;
+            sz.offsetX = 0;
+            sz.offsetY = 0;
+            setActiveCropSize(state.activeCropKey);
+        }
+
+        function copyCropToAllSizes() {
+            const src = state.sizes[state.activeCropKey];
+            Object.values(state.sizes).forEach(sz => {
+                sz.zoom = src.zoom;
+                sz.rotation = src.rotation;
+                sz.offsetX = src.offsetX;
+                sz.offsetY = src.offsetY;
+            });
+            showToast(`Posisi zoom & kemiringan ${src.title} disalin ke semua ukuran!`, 'success');
+        }
+
+        function setupStep3Events() {
+            const canvas = document.getElementById('step3-canvas');
+
+            const startDrag = (e) => {
+                const sz = state.sizes[state.activeCropKey];
+                state.isDraggingCrop = true;
+                const pt = e.touches ? e.touches[0] : e;
+                state.dragStartX = pt.clientX - sz.offsetX;
+                state.dragStartY = pt.clientY - sz.offsetY;
+            };
+
+            const onDrag = (e) => {
+                if (!state.isDraggingCrop) return;
+                e.preventDefault();
+                const sz = state.sizes[state.activeCropKey];
+                const pt = e.touches ? e.touches[0] : e;
+                sz.offsetX = pt.clientX - state.dragStartX;
+                sz.offsetY = pt.clientY - state.dragStartY;
+                renderStep3Cropper();
+            };
+
+            const endDrag = () => {
+                state.isDraggingCrop = false;
+            };
+
+            canvas.addEventListener('mousedown', startDrag);
+            window.addEventListener('mousemove', onDrag);
+            window.addEventListener('mouseup', endDrag);
+
+            canvas.addEventListener('touchstart', startDrag, { passive: false });
+            window.addEventListener('touchmove', onDrag, { passive: false });
+            window.addEventListener('touchend', endDrag);
+
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const slider = document.getElementById('slider-crop-zoom');
+                const delta = e.deltaY < 0 ? 5 : -5;
+                slider.value = Math.min(280, Math.max(40, parseInt(slider.value, 10) + delta));
+                updateActiveCropTransform();
+            }, { passive: false });
+        }
+
+        function getCropGeometryForSize(sz, viewW, viewH) {
+            const aspect = sz.wCm / sz.hCm;
+            const maxBoxH = viewH * 0.78;
+            const maxBoxW = viewW * 0.78;
+
+            let boxH = maxBoxH;
+            let boxW = boxH * aspect;
+            if (boxW > maxBoxW) {
+                boxW = maxBoxW;
+                boxH = boxW / aspect;
+            }
+            const boxX = (viewW - boxW) / 2;
+            const boxY = (viewH - boxH) / 2;
+            return { boxX, boxY, boxW, boxH };
+        }
+
+        function renderStep3Cropper() {
+            if (!state.compositedCanvas) return;
+            const canvas = document.getElementById('step3-canvas');
+            const viewW = 540;
+            const viewH = 420;
+            canvas.width = viewW;
+            canvas.height = viewH;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, viewW, viewH);
+
+            const sz = state.sizes[state.activeCropKey];
+            const { boxX, boxY, boxW, boxH } = getCropGeometryForSize(sz, viewW, viewH);
+            const img = state.compositedCanvas;
+
+            const baseScale = Math.max(boxW / img.width, boxH / img.height);
+            const finalScale = baseScale * sz.zoom;
+
+            ctx.save();
+            ctx.translate(viewW / 2 + sz.offsetX, viewH / 2 + sz.offsetY);
+            ctx.rotate((sz.rotation * Math.PI) / 180);
+            ctx.scale(finalScale, finalScale);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            ctx.restore();
+
+            // Darken outside crop frame
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.72)';
+            ctx.fillRect(0, 0, viewW, boxY);
+            ctx.fillRect(0, boxY + boxH, viewW, viewH - (boxY + boxH));
+            ctx.fillRect(0, boxY, boxX, boxH);
+            ctx.fillRect(boxX + boxW, boxY, viewW - (boxX + boxW), boxH);
+
+            // Emerald Crop Border
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2.5;
+            ctx.strokeRect(boxX, boxY, boxW, boxH);
+
+            // Biometric Face & Shoulder Guide
+            if (document.getElementById('toggle-face-guide').checked) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 1.5;
+
+                // Vertical Center
+                ctx.beginPath();
+                ctx.moveTo(boxX + boxW / 2, boxY);
+                ctx.lineTo(boxX + boxW / 2, boxY + boxH);
+                ctx.stroke();
+
+                // Eye Line (~42% from top)
+                const eyeY = boxY + boxH * 0.42;
+                ctx.beginPath();
+                ctx.moveTo(boxX, eyeY);
+                ctx.lineTo(boxX + boxW, eyeY);
+                ctx.stroke();
+
+                // Head Oval
+                ctx.beginPath();
+                ctx.ellipse(boxX + boxW / 2, boxY + boxH * 0.40, boxW * 0.26, boxH * 0.23, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Shoulders
+                ctx.beginPath();
+                ctx.moveTo(boxX + boxW * 0.08, boxY + boxH);
+                ctx.quadraticCurveTo(boxX + boxW * 0.5, boxY + boxH * 0.64, boxX + boxW * 0.92, boxY + boxH);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // Size Badge
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(boxX, boxY - 24, 136, 24);
+            ctx.fillStyle = '#020617';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.fillText(`${sz.wCm} × ${sz.hCm} cm`, boxX + 10, boxY - 8);
+        }
+
+        function renderCroppedPhotoForSize300DPI(sz) {
+            const outW = Math.round(sz.wCm * CM_TO_PX);
+            const outH = Math.round(sz.hCm * CM_TO_PX);
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = outW;
+            outCanvas.height = outH;
+            const ctx = outCanvas.getContext('2d');
+
+            if (state.bgColor !== 'transparent') {
+                ctx.fillStyle = state.bgColor;
+                ctx.fillRect(0, 0, outW, outH);
+            }
+
+            const viewW = 540;
+            const viewH = 420;
+            const { boxW, boxH } = getCropGeometryForSize(sz, viewW, viewH);
+            const img = state.compositedCanvas;
+
+            const baseScaleView = Math.max(boxW / img.width, boxH / img.height);
+            const ratioToOutput = outW / boxW;
+            const finalScale = baseScaleView * sz.zoom * ratioToOutput;
+
+            ctx.save();
+            ctx.translate(
+                outW / 2 + sz.offsetX * ratioToOutput,
+                outH / 2 + sz.offsetY * ratioToOutput
+            );
+            ctx.rotate((sz.rotation * Math.PI) / 180);
+            ctx.scale(finalScale, finalScale);
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+            ctx.restore();
+
+            return outCanvas;
+        }
+
+        // Add all checked sizes and their quantities from current customer into A4 Queue
+        function addSelectedSizesToA4(navigateAfter = true) {
+            const enabledSizes = Object.values(state.sizes).filter(sz => sz.enabled && sz.qty > 0);
+            if (enabledSizes.length === 0) {
+                showToast('Centang minimal satu ukuran dan isi jumlah lembarnya!', 'warning');
+                return;
+            }
+
+            const custTag = `Pelanggan #${state.customerCounter}`;
+            // Remove previous queue entries for the same active customer if re-editing
+            state.a4Queue = state.a4Queue.filter(q => q.customerTag !== custTag);
+
+            enabledSizes.forEach(sz => {
+                const cropped300 = renderCroppedPhotoForSize300DPI(sz);
+                state.a4Queue.push({
+                    id: `q-${state.customerCounter}-${sz.key}-${Date.now()}`,
+                    customerTag: custTag,
+                    sizeKey: sz.key,
+                    label: `${sz.wCm}×${sz.hCm} cm`,
+                    wCm: sz.wCm,
+                    hCm: sz.hCm,
+                    qty: sz.qty,
+                    photoCanvas: cropped300
+                });
+            });
+
+            updateQueueBadge();
+            runA4BinPacking();
+
+            if (navigateAfter) {
+                goToStep(4);
+                showToast(`${enabledSizes.length} jenis ukuran dari ${custTag} berhasil disusun di kertas A4!`, 'success');
+            }
+        }
+
+        function updateQueueBadge() {
+            const totalItems = state.a4Queue.reduce((acc, q) => acc + q.qty, 0);
+            const badge = document.getElementById('nav-queue-badge');
+            if (totalItems > 0) {
+                badge.textContent = totalItems;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // =========================================================================
+        // STEP 4: MULTI-CUSTOMER QUEUE, BIN-PACKING & A4 300 DPI EXPORT/PRINT
+        // =========================================================================
+        function startNextCustomer() {
+            state.customerCounter++;
+            state.rawImage = null;
+            state.enhancedCanvas = null;
+            state.maskCanvas = null;
+            state.compositedCanvas = null;
+
+            document.getElementById('upload-heading').textContent = `Upload Foto Pelanggan #${state.customerCounter}`;
+            document.getElementById('upload-prompt').classList.remove('hidden');
+            document.getElementById('step1-preview-wrapper').classList.add('hidden');
+            document.getElementById('btn-next-1').disabled = true;
+            document.getElementById('file-input').value = '';
+
+            goToStep(1);
+            showToast(`Siap memproses Foto Pelanggan #${state.customerCounter} ke kertas A4 yang sama!`, 'info');
+        }
+
+        function renderA4QueueList() {
+            const container = document.getElementById('a4-queue-list');
+            container.innerHTML = '';
+
+            if (state.a4Queue.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 px-4 rounded-xl border border-dashed border-slate-800 text-xs text-slate-400">
+                        Belum ada foto dalam antrean A4. Kembali ke Tahap 3 untuk memilih ukuran & jumlah lembar.
+                    </div>
+                `;
+                return;
+            }
+
+            state.a4Queue.forEach(item => {
+                const thumbUrl = item.photoCanvas.toDataURL('image/jpeg', 0.7);
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <img src="${thumbUrl}" alt="${item.label}" class="w-9 h-11 object-cover rounded border border-slate-700 shrink-0">
+                        <div class="min-w-0">
+                            <div class="text-xs font-bold text-white truncate">${item.customerTag} • <span class="text-emerald-400">${item.label}</span></div>
+                            <div class="text-[11px] text-slate-400">${Math.round(item.wCm * 10)} × ${Math.round(item.hCm * 10)} mm (300 DPI)</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button onclick="updateQueueQty('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold text-xs text-white">-</button>
+                        <span class="w-7 text-center font-bold text-xs text-white">${item.qty}</span>
+                        <button onclick="updateQueueQty('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 font-bold text-xs text-white">+</button>
+                        <button onclick="removeQueueEntry('${item.id}')" title="Hapus ukuran ini" class="ml-1 p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        function updateQueueQty(queueId, delta) {
+            const entry = state.a4Queue.find(q => q.id === queueId);
+            if (!entry) return;
+            entry.qty = Math.max(0, entry.qty + delta);
+            if (entry.qty === 0) {
+                state.a4Queue = state.a4Queue.filter(q => q.id !== queueId);
+            }
+            updateQueueBadge();
+            renderA4QueueList();
+            runA4BinPacking();
+        }
+
+        function removeQueueEntry(queueId) {
+            state.a4Queue = state.a4Queue.filter(q => q.id !== queueId);
+            updateQueueBadge();
+            renderA4QueueList();
+            runA4BinPacking();
+        }
+
+        function clearA4Queue() {
+            state.a4Queue = [];
+            state.a4PlacedItems = [];
+            updateQueueBadge();
+            renderA4QueueList();
+            renderA4Preview();
+            showToast('Kertas A4 dikosongkan.', 'info');
+        }
+
+        function setPaperOrientation(orient, repack = true) {
+            state.paperOrientation = orient;
+            const pBtn = document.getElementById('orient-portrait');
+            const lBtn = document.getElementById('orient-landscape');
+            const wrapper = document.getElementById('a4-frame-wrapper');
+
+            if (orient === 'portrait') {
+                pBtn.className = 'py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition';
+                lBtn.className = 'py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition';
+                wrapper.className = 'relative w-full max-w-[420px] aspect-[210/297] bg-white shadow-2xl rounded-sm overflow-hidden border-2 border-slate-700 transition-all duration-300';
+                document.getElementById('a4-dim-label').textContent = 'Kertas A4 Portrait (21.0 × 29.7 cm)';
+                document.getElementById('export-px-info').textContent = '2480 × 3508 px (Skala 1:1 Penggaris)';
+            } else {
+                lBtn.className = 'py-2 px-3 rounded-xl border-2 border-emerald-500 bg-emerald-500/15 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition';
+                pBtn.className = 'py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition';
+                wrapper.className = 'relative w-full max-w-[540px] aspect-[297/210] bg-white shadow-2xl rounded-sm overflow-hidden border-2 border-slate-700 transition-all duration-300';
+                document.getElementById('a4-dim-label').textContent = 'Kertas A4 Landscape (29.7 × 21.0 cm)';
+                document.getElementById('export-px-info').textContent = '3508 × 2480 px (Skala 1:1 Penggaris)';
+            }
+
+            saveSettings();
+            if (repack) runA4BinPacking();
+        }
+
+        function setPhotoGap(gapMm) {
+            state.photoGapMm = gapMm;
+            updateGapButtonsUI(gapMm);
+            saveSettings();
+            runA4BinPacking();
+        }
+
+        function updateGapButtonsUI(gapMm) {
+            document.getElementById('val-photo-gap').textContent = gapMm + ' mm';
+            [0, 2, 3, 5].forEach(g => {
+                const btn = document.getElementById(`gap-btn-${g}`);
+                if (!btn) return;
+                if (g === gapMm) {
+                    btn.className = 'gap-btn py-1.5 rounded-lg border-2 border-emerald-500 bg-emerald-500/15 text-xs font-bold text-emerald-300';
+                } else {
+                    btn.className = 'gap-btn py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-xs font-semibold text-slate-300';
+                }
+            });
+        }
+
+        // Smart Maximal-Rectangles / Shelf Bin-Packing Algorithm for Mixed Sizes on A4
+        function runA4BinPacking() {
+            const { wPx: sheetW, hPx: sheetH } = getA4DimensionsPx();
+            const marginPx = state.paperMarginMm * MM_TO_PX;
+            const gapPx = state.photoGapMm * MM_TO_PX;
+            const allowAutoRotate = document.getElementById('chk-auto-rotate').checked;
+
+            // Expand all queue entries into individual photo instances, sorted largest area/height first
+            const expanded = [];
+            state.a4Queue.forEach(entry => {
+                for (let i = 0; i < entry.qty; i++) {
+                    expanded.push({
+                        queueId: entry.id,
+                        label: entry.label,
+                        w: entry.photoCanvas.width,
+                        h: entry.photoCanvas.height,
+                        canvas: entry.photoCanvas
+                    });
+                }
+            });
+
+            expanded.sort((a, b) => (b.h - a.h) || (b.w - a.w));
+
+            // Maintain free rectangular regions inside printable area
+            let freeRects = [{
+                x: marginPx,
+                y: marginPx,
+                w: sheetW - marginPx * 2,
+                h: sheetH - marginPx * 2
+            }];
+
+            const placed = [];
+            let overflowCount = 0;
+
+            expanded.forEach((item, idx) => {
+                let bestScore = Infinity;
+                let bestRectIdx = -1;
+                let bestRotated = false;
+                let bestW = item.w;
+                let bestH = item.h;
+
+                for (let i = 0; i < freeRects.length; i++) {
+                    const r = freeRects[i];
+
+                    // Try unrotated
+                    if (item.w <= r.w + 0.5 && item.h <= r.h + 0.5) {
+                        const score = r.y * 10000 + r.x; // Top-left tightest placement
+                        if (score < bestScore) {
+                            bestScore = score;
+                            bestRectIdx = i;
+                            bestRotated = false;
+                            bestW = item.w;
+                            bestH = item.h;
+                        }
+                    }
+
+                    // Try rotated 90 deg if allowed
+                    if (allowAutoRotate && item.h <= r.w + 0.5 && item.w <= r.h + 0.5) {
+                        const score = r.y * 10000 + r.x + 15; // Slight preference for upright if equal
+                        if (score < bestScore) {
+                            bestScore = score;
+                            bestRectIdx = i;
+                            bestRotated = true;
+                            bestW = item.h;
+                            bestH = item.w;
+                        }
+                    }
+                }
+
+                if (bestRectIdx === -1) {
+                    overflowCount++;
+                    return;
+                }
+
+                const chosen = freeRects[bestRectIdx];
+                placed.push({
+                    uid: `placed-${Date.now()}-${idx}`,
+                    queueId: item.queueId,
+                    label: item.label,
+                    x: chosen.x,
+                    y: chosen.y,
+                    w: bestW,
+                    h: bestH,
+                    rotated: bestRotated,
+                    canvas: item.canvas
+                });
+
+                // Guillotine split of the chosen free rectangle with gapPx spacing
+                const usedW = bestW + gapPx;
+                const usedH = bestH + gapPx;
+                freeRects.splice(bestRectIdx, 1);
+
+                const remRightW = chosen.w - usedW;
+                const remBottomH = chosen.h - usedH;
+
+                if (remRightW > 20 && bestH > 20) {
+                    freeRects.push({
+                        x: chosen.x + usedW,
+                        y: chosen.y,
+                        w: remRightW,
+                        h: Math.min(chosen.h, usedH)
+                    });
+                }
+                if (remBottomH > 20 && chosen.w > 20) {
+                    freeRects.push({
+                        x: chosen.x,
+                        y: chosen.y + usedH,
+                        w: chosen.w,
+                        h: remBottomH
+                    });
+                }
+
+                // Merge horizontally adjacent free shelves of identical Y and Height
+                freeRects.sort((a, b) => (a.y - b.y) || (a.x - b.x));
+                for (let k = 0; k < freeRects.length - 1; k++) {
+                    const a = freeRects[k];
+                    const b = freeRects[k + 1];
+                    if (Math.abs(a.y - b.y) < 1 && Math.abs(a.h - b.h) < 1 && Math.abs((a.x + a.w) - b.x) < 2) {
+                        a.w += b.w;
+                        freeRects.splice(k + 1, 1);
+                        k--;
+                    }
+                }
+            });
+
+            state.a4PlacedItems = placed;
+            renderA4Preview();
+
+            if (overflowCount > 0) {
+                showToast(`Peringatan: ${overflowCount} foto melebihi kapasitas 1 lembar kertas A4! Coba Landscape, kecilkan Gap, atau kurangi jumlah.`, 'warning');
+            }
+        }
+
+        function duplicateSelectedA4Item() {
+            if (!state.selectedA4ItemUid) {
+                showToast('Klik salah satu foto di kertas A4 terlebih dahulu untuk diduplikat.', 'info');
+                return;
+            }
+            const orig = state.a4PlacedItems.find(it => it.uid === state.selectedA4ItemUid);
+            if (!orig) return;
+            const { wPx, hPx } = getA4DimensionsPx();
+            const copy = {
+                ...orig,
+                uid: `placed-copy-${Date.now()}`,
+                x: Math.min(wPx - orig.w, orig.x + 40),
+                y: Math.min(hPx - orig.h, orig.y + 40)
+            };
+            state.a4PlacedItems.push(copy);
+            state.selectedA4ItemUid = copy.uid;
+            renderA4Preview();
+        }
+
+        function setupStep4Events() {
+            const canvas = document.getElementById('a4-preview-canvas');
+
+            const toA4Coords = (e) => {
+                const { wPx, hPx } = getA4DimensionsPx();
+                const rect = canvas.getBoundingClientRect();
+                const pt = e.touches ? e.touches[0] : e;
+                return {
+                    x: ((pt.clientX - rect.left) / rect.width) * wPx,
+                    y: ((pt.clientY - rect.top) / rect.height) * hPx
+                };
+            };
+
+            const onDown = (e) => {
+                const { x, y } = toA4Coords(e);
+                for (let i = state.a4PlacedItems.length - 1; i >= 0; i--) {
+                    const it = state.a4PlacedItems[i];
+                    if (x >= it.x && x <= it.x + it.w && y >= it.y && y <= it.y + it.h) {
+                        state.selectedA4ItemUid = it.uid;
+                        state.isDraggingA4Item = true;
+                        state.a4DragOffsetX = x - it.x;
+                        state.a4DragOffsetY = y - it.y;
+                        state.a4PlacedItems.splice(i, 1);
+                        state.a4PlacedItems.push(it);
+                        renderA4Preview();
+                        return;
+                    }
+                }
+                state.selectedA4ItemUid = null;
+                renderA4Preview();
+            };
+
+            const onMove = (e) => {
+                if (!state.isDraggingA4Item || !state.selectedA4ItemUid) return;
+                e.preventDefault();
+                const { wPx, hPx } = getA4DimensionsPx();
+                const { x, y } = toA4Coords(e);
+                const it = state.a4PlacedItems.find(item => item.uid === state.selectedA4ItemUid);
+                if (it) {
+                    it.x = Math.max(0, Math.min(wPx - it.w, x - state.a4DragOffsetX));
+                    it.y = Math.max(0, Math.min(hPx - it.h, y - state.a4DragOffsetY));
+                    renderA4Preview();
+                }
+            };
+
+            const onUp = () => {
+                state.isDraggingA4Item = false;
+            };
+
+            canvas.addEventListener('dblclick', (e) => {
+                const { x, y } = toA4Coords(e);
+                for (let i = state.a4PlacedItems.length - 1; i >= 0; i--) {
+                    const it = state.a4PlacedItems[i];
+                    if (x >= it.x && x <= it.x + it.w && y >= it.y && y <= it.y + it.h) {
+                        it.rotated = !it.rotated;
+                        [it.w, it.h] = [it.h, it.w];
+                        renderA4Preview();
+                        break;
+                    }
+                }
+            });
+
+            canvas.addEventListener('mousedown', onDown);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+
+            canvas.addEventListener('touchstart', onDown, { passive: false });
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onUp);
+        }
+
+        function composeFullA4Sheet(includeSelectionHighlight = false) {
+            const { wPx, hPx } = getA4DimensionsPx();
+            const sheet = document.createElement('canvas');
+            sheet.width = wPx;
+            sheet.height = hPx;
+            const ctx = sheet.getContext('2d');
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, wPx, hPx);
+
+            const drawCutLines = document.getElementById('chk-cut-lines').checked;
+
+            state.a4PlacedItems.forEach(item => {
+                ctx.save();
+                if (item.rotated) {
+                    ctx.translate(item.x + item.w / 2, item.y + item.h / 2);
+                    ctx.rotate(Math.PI / 2);
+                    ctx.drawImage(item.canvas, -item.h / 2, -item.w / 2, item.h, item.w);
+                } else {
+                    ctx.drawImage(item.canvas, item.x, item.y, item.w, item.h);
+                }
+                ctx.restore();
+
+                if (drawCutLines) {
+                    ctx.save();
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([12, 8]);
+                    ctx.strokeRect(item.x, item.y, item.w, item.h);
+                    ctx.restore();
+                }
+
+                if (includeSelectionHighlight && item.uid === state.selectedA4ItemUid) {
+                    ctx.save();
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 8;
+                    ctx.strokeRect(item.x, item.y, item.w, item.h);
+                    ctx.restore();
+                }
+            });
+
+            return sheet;
+        }
+
+        function renderA4Preview() {
+            const { wPx, hPx } = getA4DimensionsPx();
+            const fullSheet = composeFullA4Sheet(true);
+            const previewCanvas = document.getElementById('a4-preview-canvas');
+            previewCanvas.width = state.paperOrientation === 'portrait' ? 840 : 1188;
+            previewCanvas.height = state.paperOrientation === 'portrait' ? 1188 : 840;
+            const ctx = previewCanvas.getContext('2d');
+            ctx.drawImage(fullSheet, 0, 0, previewCanvas.width, previewCanvas.height);
+
+            const totalPhotoArea = state.a4PlacedItems.reduce((acc, it) => acc + it.w * it.h, 0);
+            const a4Area = wPx * hPx;
+            const pct = Math.min(100, Math.round((totalPhotoArea / a4Area) * 100));
+            const totalRequested = state.a4Queue.reduce((acc, q) => acc + q.qty, 0);
+
+            const badge = document.getElementById('a4-usage-badge');
+            if (state.a4PlacedItems.length < totalRequested) {
+                badge.className = 'px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold';
+                badge.textContent = `Muat ${state.a4PlacedItems.length}/${totalRequested} Foto • Penuh (${pct}%)`;
+            } else {
+                badge.className = 'px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold';
+                badge.textContent = `${state.a4PlacedItems.length} Foto • Terpakai ${pct}%`;
+            }
+        }
+
+        function exportA4File(format = 'jpg') {
+            if (state.a4PlacedItems.length === 0) {
+                showToast('Kertas A4 masih kosong. Tambahkan foto terlebih dahulu!', 'warning');
+                return;
+            }
+            const fullSheet = composeFullA4Sheet(false);
+            const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+            const dataUrl = fullSheet.toDataURL(mime, 0.98);
+
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().slice(0, 10);
+            link.download = `PasFoto_A4_300DPI_BerkahFotocopy_${timestamp}.${format}`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast(`File A4 300 DPI (.${format.toUpperCase()}) berhasil diunduh!`, 'success');
+        }
+
+        function printA4Direct() {
+            if (state.a4PlacedItems.length === 0) {
+                showToast('Kertas A4 masih kosong. Tambahkan foto terlebih dahulu!', 'warning');
+                return;
+            }
+            const fullSheet = composeFullA4Sheet(false);
+            const printImg = document.getElementById('print-image');
+            printImg.onload = () => {
+                window.print();
+            };
+            printImg.src = fullSheet.toDataURL('image/png');
+        }
+    </script>
+</body>
+</html>
